@@ -35,6 +35,7 @@ export default function Modal({ productId, add, close }: Props) {
 
 	useEffect(() => {
 		if (productId.length >= 1) {
+			setLoading(true);
 			axios(`/api/store/product/details?id=${productId}`)
 				.then(({ data }: { data: ProductDetails }) => {
 					setName(data.name);
@@ -118,14 +119,8 @@ export default function Modal({ productId, add, close }: Props) {
 						</div>
 					</div>
 
-					<div className="h-screen">
-						<SimpleBar
-							className="mt-6 w-full pr-4 transition-all phone:pr-0.5"
-							style={{
-								height: `calc(100% - ${detailsHeight}px - 100px)`,
-							}}
-							autoHide={false}
-						>
+					<div className="h-96 max-h-96 min-h-full">
+						<SimpleBar className="mt-6 h-full w-full pr-4 transition-all phone:pr-0.5" autoHide={false}>
 							{primaryContent && (
 								<>
 									<h1 className="text-xl font-bold">{primaryTitle}</h1>
