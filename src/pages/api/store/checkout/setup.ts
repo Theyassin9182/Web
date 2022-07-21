@@ -73,6 +73,26 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		return res.status(500).json({ message: "Unable to establish customer" });
 	}
 
+	let openInvoices =
+		(
+			await stripe.invoices.list({
+				customer: customer.id,
+				status: "open",
+			})
+		).data ?? [];
+
+	if (openInvoices.length >= 1) {
+		for (let openInvoice of openInvoices) {
+			try {
+				await stripe.invoices.voidInvoice(openInvoice.id);
+			} catch {
+				if (process.env.NODE_ENV === "production" && !process.env.IN_TESTING) {
+					console.error(`Failed to close invoice ${openInvoice.id} for customer ${customer.id}`);
+				}
+			}
+		}
+	}
+
 	let discount: Stripe.PromotionCode | null = null;
 	let discountCode: AppliedDiscount | undefined = await req.session.get("discountCode");
 
