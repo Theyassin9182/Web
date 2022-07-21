@@ -382,92 +382,98 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 			</Dialog>
 			<div className="flex flex-col justify-between lg:flex-row lg:space-x-5 xl:space-x-0">
 				<div className="flex w-full flex-col lg:w-[73%]">
-					{cart[0].type !== "subscription" ? (
-						<>
-							<div className="h-max w-full rounded-lg bg-light-500 px-4 py-3 dark:bg-dark-200">
-								<Title size="small">Your items</Title>
-								<div className="mt-2">
-									{cart.map((item, i) => (
-										<CartItem
-											size="large"
-											index={i}
-											{...item}
-											updateQuantity={updateQuantity}
-											changeInterval={changeInterval}
-											deleteItem={deleteItem}
-											disabled={processingChange}
-											shouldShake={itemsShaking.includes(item.id)}
-										/>
-									))}
+					{cart[0] ? (
+						cart[0].type !== "subscription" ? (
+							<>
+								<div className="h-max w-full rounded-lg bg-light-500 px-4 py-3 dark:bg-dark-200">
+									<Title size="small">Your items</Title>
+									<div className="mt-2">
+										{cart.map((item, i) => (
+											<CartItem
+												size="large"
+												index={i}
+												{...item}
+												updateQuantity={updateQuantity}
+												changeInterval={changeInterval}
+												deleteItem={deleteItem}
+												disabled={processingChange}
+												shouldShake={itemsShaking.includes(item.id)}
+											/>
+										))}
+									</div>
 								</div>
-							</div>
-							<div className="mt-5 h-max w-full rounded-lg bg-light-500 px-4 py-3 dark:bg-dark-200">
-								<Title size="small">Other users have also bought</Title>
-								<div className="mt-2">
-									{upsells.map((upsell) => (
-										<OtherProduct {...upsell} addToCart={addUpsellProduct} />
-									))}
+								<div className="mt-5 h-max w-full rounded-lg bg-light-500 px-4 py-3 dark:bg-dark-200">
+									<Title size="small">Other users have also bought</Title>
+									<div className="mt-2">
+										{upsells.map((upsell) => (
+											<OtherProduct {...upsell} addToCart={addUpsellProduct} />
+										))}
+									</div>
 								</div>
-							</div>
-						</>
+							</>
+						) : (
+							<>
+								<div className="mb-10 h-max w-full rounded-lg bg-light-500 px-4 py-3 dark:bg-dark-200">
+									<Title size="small">Your items</Title>
+									<div className="mt-2">
+										{cart.map((item, i) => (
+											<CartItem
+												size="large"
+												index={i}
+												{...item}
+												updateQuantity={updateQuantity}
+												changeInterval={changeInterval}
+												deleteItem={deleteItem}
+												disabled={processingChange}
+											/>
+										))}
+									</div>
+									<div className="my-5 flex w-full items-center justify-start space-x-5 rounded-lg bg-dank-200 py-3 px-5">
+										<p>
+											<Iconify icon="ant-design:info-circle-outlined" width={24} />
+										</p>
+										{isGift ? (
+											<p className="max-w-[90%] text-sm">
+												The selected subscription is being purchased as a gift. Gifted
+												subscriptions are not recurring products, therefore you will not be
+												charged again for this purchase.
+											</p>
+										) : (
+											<p className="max-w-[90%] text-sm">
+												The selected subscription will last {price().interval?.count}{" "}
+												{price().interval!.period + (price().interval!.count > 1 ? "s " : " ")}
+												and is automatically assigned to{" "}
+												<Tooltip content={user!.username + "#" + user!.discriminator}>
+													<span className="underline">your Discord account</span>
+												</Tooltip>
+												. You will be charged the same amount again (
+												{processingChange ? (
+													<div className="inline-block h-4 w-10 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
+												) : (
+													<>
+														$
+														{(
+															totalCost - (thresholdDiscount ? totalCost * 0.1 : 0)
+														).toFixed(2)}
+													</>
+												)}
+												) on{" "}
+												{format(
+													new Date(
+														new Date().getTime() +
+															TIME[price().interval?.period as keyof typeof TIME]
+													),
+													"LLLL do, yyyy 'at' h:mm aaa"
+												)}
+											</p>
+										)}
+									</div>
+									<SubscriptionInfo productId={cart[0].id} />
+								</div>
+							</>
+						)
 					) : (
-						<>
-							<div className="mb-10 h-max w-full rounded-lg bg-light-500 px-4 py-3 dark:bg-dark-200">
-								<Title size="small">Your items</Title>
-								<div className="mt-2">
-									{cart.map((item, i) => (
-										<CartItem
-											size="large"
-											index={i}
-											{...item}
-											updateQuantity={updateQuantity}
-											changeInterval={changeInterval}
-											deleteItem={deleteItem}
-											disabled={processingChange}
-										/>
-									))}
-								</div>
-								<div className="my-5 flex w-full items-center justify-start space-x-5 rounded-lg bg-dank-200 py-3 px-5">
-									<p>
-										<Iconify icon="ant-design:info-circle-outlined" width={24} />
-									</p>
-									{isGift ? (
-										<p className="max-w-[90%] text-sm">
-											The selected subscription is being purchased as a gift. Gifted subscriptions
-											are not recurring products, therefore you will not be charged again for this
-											purchase.
-										</p>
-									) : (
-										<p className="max-w-[90%] text-sm">
-											The selected subscription will last {price().interval?.count}{" "}
-											{price().interval!.period + (price().interval!.count > 1 ? "s " : " ")}and
-											is automatically assigned to{" "}
-											<Tooltip content={user!.username + "#" + user!.discriminator}>
-												<span className="underline">your Discord account</span>
-											</Tooltip>
-											. You will be charged the same amount again (
-											{processingChange ? (
-												<div className="inline-block h-4 w-10 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
-											) : (
-												<>
-													$
-													{(totalCost - (thresholdDiscount ? totalCost * 0.1 : 0)).toFixed(2)}
-												</>
-											)}
-											) on{" "}
-											{format(
-												new Date(
-													new Date().getTime() +
-														TIME[price().interval?.period as keyof typeof TIME]
-												),
-												"LLLL do, yyyy 'at' h:mm aaa"
-											)}
-										</p>
-									)}
-								</div>
-								<SubscriptionInfo productId={cart[0].id} />
-							</div>
-						</>
+						<></>
 					)}
 				</div>
 				<div className="my-10 flex w-full flex-col items-center space-y-10 md:flex-row-reverse md:items-start md:space-y-0 lg:my-0 lg:mb-10 lg:w-80 lg:flex-col lg:space-y-5">
@@ -540,102 +546,114 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 									)}
 								</div>
 							</div>
-							<h3 className="font-montserrat text-base font-semibold text-black dark:text-white">
-								Apply a discount code
-							</h3>
-							<div className="group mt-2">
-								<div className="flex flex-col justify-between text-black dark:text-white">
-									<div>
-										<div className="mb-4">
-											<div className="flex flex-row">
-												<Input
-													width="medium"
-													type="text"
-													placeholder="NEWSTORE5"
-													value={discountInput}
-													className="mr-3"
-													onChange={(e: any) => setDiscountInput(e.target.value)}
-												/>
-												<Button
-													size="medium"
-													className={clsx(
-														"w-full max-w-max rounded-md",
-														discountInput?.length < 1 || processingChange
-															? "!bg-[#7F847F] text-[#333533]"
-															: "",
-														appliedDiscount && appliedCode === discountInput && "bg-red-500"
-													)}
-													onClick={appliedDiscount ? removeDiscount : submitDiscountCode}
-													disabled={processingChange}
-												>
-													{appliedDiscount && appliedCode === discountInput
-														? "Clear"
-														: "Submit"}
-												</Button>
-											</div>
-											{discountError.length > 1 && (
-												<p className="text-right text-sm text-red-500">{discountError}</p>
-											)}
-										</div>
-										{(appliedDiscount || thresholdDiscount) && (
+							{cart[0] && cart[0].type !== "subscription" && (
+								<>
+									<h3 className="font-montserrat text-base font-semibold text-black dark:text-white">
+										Apply a discount code
+									</h3>
+									<div className="group mt-2">
+										<div className="flex flex-col justify-between text-black dark:text-white">
 											<div>
-												<div className="flex items-center justify-between">
-													<h3 className="font-montserrat text-base font-bold">Discount</h3>
-													{processingChange ? (
-														<div className="h-5 w-12 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
-													) : (
-														<h3 className="font-montserrat text-base font-bold text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
-															-$
-															{(
-																appliedSavings +
-																(thresholdDiscount ? totalCost * 0.1 : 0)
-															).toFixed(2)}
-														</h3>
+												<div className="mb-4">
+													<div className="flex flex-row">
+														<Input
+															width="medium"
+															type="text"
+															placeholder="NEWSTORE5"
+															value={discountInput}
+															className="mr-3"
+															onChange={(e: any) => setDiscountInput(e.target.value)}
+														/>
+														<Button
+															size="medium"
+															className={clsx(
+																"w-full max-w-max rounded-md",
+																discountInput?.length < 1 || processingChange
+																	? "!bg-[#7F847F] text-[#333533]"
+																	: "",
+																appliedDiscount &&
+																	appliedCode === discountInput &&
+																	"bg-red-500"
+															)}
+															onClick={
+																appliedDiscount ? removeDiscount : submitDiscountCode
+															}
+															disabled={processingChange}
+														>
+															{appliedDiscount && appliedCode === discountInput
+																? "Clear"
+																: "Submit"}
+														</Button>
+													</div>
+													{discountError.length > 1 && (
+														<p className="text-right text-sm text-red-500">
+															{discountError}
+														</p>
 													)}
 												</div>
-												<div>
-													<ul className="pl-3">
-														{discountedItems?.map((item) => {
-															const cartItem = cart.filter(
-																(_item) => _item.id === item.id
-															)[0];
-															return (
-																<li className="flex list-decimal justify-between text-sm">
-																	<p className="dark:text-[#b4b4b4]">
-																		• {cartItem.quantity}x {cartItem.name}
-																	</p>
-																	<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
-																		-$
-																		{item.savings.toFixed(2)}
-																	</p>
-																</li>
-															);
-														})}
-														{thresholdDiscount && (
-															<li className="flex list-decimal items-center justify-between text-sm">
-																<p className="flex items-center justify-center space-x-1 dark:text-[#b4b4b4]">
-																	<span>• Threshold discount</span>
-																	<Tooltip content="10% Discount applied because base cart value exceeds $20">
-																		<Iconify icon="ant-design:question-circle-filled" />
-																	</Tooltip>
-																</p>
-																{processingChange ? (
-																	<div className="h-4 w-12 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
-																) : (
-																	<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
-																		-$
-																		{(totalCost * 0.1).toFixed(2)}
-																	</p>
+												{(appliedDiscount || thresholdDiscount) && (
+													<div>
+														<div className="flex items-center justify-between">
+															<h3 className="font-montserrat text-base font-bold">
+																Discount
+															</h3>
+															{processingChange ? (
+																<div className="h-5 w-12 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
+															) : (
+																<h3 className="font-montserrat text-base font-bold text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
+																	-$
+																	{(
+																		appliedSavings +
+																		(thresholdDiscount ? totalCost * 0.1 : 0)
+																	).toFixed(2)}
+																</h3>
+															)}
+														</div>
+														<div>
+															<ul className="pl-3">
+																{discountedItems?.map((item) => {
+																	const cartItem = cart.filter(
+																		(_item) => _item.id === item.id
+																	)[0];
+																	return (
+																		<li className="flex list-decimal justify-between text-sm">
+																			<p className="dark:text-[#b4b4b4]">
+																				• {cartItem.quantity}x {cartItem.name}
+																			</p>
+																			<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
+																				-$
+																				{item.savings.toFixed(2)}
+																			</p>
+																		</li>
+																	);
+																})}
+																{thresholdDiscount && (
+																	<li className="flex list-decimal items-center justify-between text-sm">
+																		<p className="flex items-center justify-center space-x-1 dark:text-[#b4b4b4]">
+																			<span>• Threshold discount</span>
+																			<Tooltip content="10% Discount applied because base cart value exceeds $20">
+																				<Iconify icon="ant-design:question-circle-filled" />
+																			</Tooltip>
+																		</p>
+																		{processingChange ? (
+																			<div className="h-4 w-12 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
+																		) : (
+																			<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
+																				-$
+																				{(totalCost * 0.1).toFixed(2)}
+																			</p>
+																		)}
+																	</li>
 																)}
-															</li>
-														)}
-													</ul>
-												</div>
+															</ul>
+														</div>
+													</div>
+												)}
 											</div>
-										)}
+										</div>
 									</div>
-								</div>
-							</div>
+								</>
+							)}
 						</div>
 						<div className="mt-3">
 							<p className="text-right text-sm text-neutral-600 dark:text-neutral-300/50">
