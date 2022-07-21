@@ -609,44 +609,47 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 																</h3>
 															)}
 														</div>
-														<div>
-															<ul className="pl-3">
-																{discountedItems?.map((item) => {
-																	const cartItem = cart.filter(
-																		(_item) => _item.id === item.id
-																	)[0];
-																	return (
-																		<li className="flex list-decimal justify-between text-sm">
-																			<p className="dark:text-[#b4b4b4]">
-																				• {cartItem.quantity}x {cartItem.name}
+														{(discountedItems.length >= 1 || thresholdDiscount) && (
+															<div>
+																<ul className="pl-3">
+																	{discountedItems?.map((item) => {
+																		const cartItem = cart.filter(
+																			(_item) => _item.id === item.id
+																		)[0];
+																		return (
+																			<li className="flex list-decimal justify-between text-sm">
+																				<p className="dark:text-[#b4b4b4]">
+																					• {cartItem.quantity}x{" "}
+																					{cartItem.name}
+																				</p>
+																				<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
+																					-$
+																					{item.savings.toFixed(2)}
+																				</p>
+																			</li>
+																		);
+																	})}
+																	{thresholdDiscount && (
+																		<li className="flex list-decimal items-center justify-between text-sm">
+																			<p className="flex items-center justify-center space-x-1 dark:text-[#b4b4b4]">
+																				<span>• Threshold discount</span>
+																				<Tooltip content="10% Discount applied because base cart value exceeds $20">
+																					<Iconify icon="ant-design:question-circle-filled" />
+																				</Tooltip>
 																			</p>
-																			<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
-																				-$
-																				{item.savings.toFixed(2)}
-																			</p>
+																			{processingChange ? (
+																				<div className="h-4 w-12 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
+																			) : (
+																				<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
+																					-$
+																					{(totalCost * 0.1).toFixed(2)}
+																				</p>
+																			)}
 																		</li>
-																	);
-																})}
-																{thresholdDiscount && (
-																	<li className="flex list-decimal items-center justify-between text-sm">
-																		<p className="flex items-center justify-center space-x-1 dark:text-[#b4b4b4]">
-																			<span>• Threshold discount</span>
-																			<Tooltip content="10% Discount applied because base cart value exceeds $20">
-																				<Iconify icon="ant-design:question-circle-filled" />
-																			</Tooltip>
-																		</p>
-																		{processingChange ? (
-																			<div className="h-4 w-12 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
-																		) : (
-																			<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
-																				-$
-																				{(totalCost * 0.1).toFixed(2)}
-																			</p>
-																		)}
-																	</li>
-																)}
-															</ul>
-														</div>
+																	)}
+																</ul>
+															</div>
+														)}
 													</div>
 												)}
 											</div>

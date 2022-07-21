@@ -1,6 +1,7 @@
 import { NextApiResponse } from "next";
 import { CartItem } from "src/pages/store";
 import { DiscountItem } from "src/pages/store/checkout";
+import { calculateDiscount } from "src/util/discounts";
 import { getSelectedPriceValue } from "src/util/store";
 import { stripeConnect } from "src/util/stripe";
 import Stripe from "stripe";
@@ -72,6 +73,13 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 
 	const coupon: Stripe.Coupon = promotionalCode.coupon;
 	const cart: CartItem[] = await req.session.get("cart")!;
+
+	if (cart[0].type === "subscription") {
+		return res.status(400).json({
+			error: "Discounts cannot be applied to subscriptions.",
+		});
+	}
+
 	const cartTotal = cart.reduce(
 		(acc, item: CartItem) => acc + (getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity,
 		0
@@ -83,66 +91,44 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		});
 	}
 
-	const discountAmount = coupon.percent_off! / 100;
+	const isPercent = coupon.percent_off ? true : false;
+	const discountAmount = (isPercent ? coupon.percent_off! : coupon.amount_off!) / 100;
 	const discountedItems: DiscountItem[] = [];
-	const appliesTo: string[] | undefined = coupon.applies_to?.products;
+	const appliesTo: string[] = coupon.applies_to?.products ?? [];
 	let totalSavings = 0;
 
-	if (appliesTo && appliesTo.length >= 1) {
-		for (let i in appliesTo) {
-			const { data: priceForProduct } = await stripe.prices.list({
-				product: appliesTo[i],
-			});
-			const itemInCart = cart.filter((item) => item.id === appliesTo[i])[0];
-
-			if (!itemInCart) break;
-
-			const selectedPrice = getSelectedPriceValue(itemInCart, itemInCart.selectedPrice);
-			const itemCost =
-				(selectedPrice.interval?.period === "year"
-					? selectedPrice.value * 10.8 // 10.8 is just 12 months (x12) with a 10% discount
-					: selectedPrice.value) * itemInCart.quantity;
-			const result: DiscountItem = {
-				id: appliesTo[i],
-				type: priceForProduct[0].type,
-				originalCost: itemCost,
-				discountedCost: parseFloat((itemCost - itemCost * discountAmount).toFixed(2)),
-				savings: parseFloat((itemCost * discountAmount).toFixed(2)),
-			};
-			discountedItems.push(result);
-			totalSavings += parseFloat((itemCost * discountAmount).toFixed(2));
+	if (isPercent) {
+		if (appliesTo.length >= 1) {
+			const cartItemIds = cart.map((item) => item.id);
+			for (let itemId of cartItemIds) {
+				if (appliesTo.includes(itemId)) {
+					const product = await calculateDiscount(
+						cart.find((item) => item.id === itemId)!,
+						discountAmount,
+						isPercent
+					);
+					discountedItems.push(product);
+					totalSavings += product.savings;
+				}
+			}
+		} else {
+			for (let item of cart) {
+				const product = await calculateDiscount(item, discountAmount, isPercent);
+				discountedItems.push(product);
+				totalSavings += product.savings;
+			}
+		}
+		if (discountedItems.length < 1) {
+			return res.status(406).json({ code });
 		}
 	} else {
-		for (let i = 0; i < cart.length; i++) {
-			const { data: priceForProduct } = await stripe.prices.list({
-				product: cart[i].id,
-			});
-
-			const selectedPrice = getSelectedPriceValue(cart[i], cart[i].selectedPrice);
-			const itemCost =
-				(selectedPrice.interval?.period === "year"
-					? selectedPrice.value * 10.8 // 10.8 is just 12 months (x12) with a 10% discount
-					: selectedPrice.value) * cart[i].quantity;
-			const result: DiscountItem = {
-				id: cart[i].id,
-				type: priceForProduct[0].type,
-				originalCost: itemCost,
-				discountedCost: parseFloat((itemCost - itemCost * discountAmount).toFixed(2)),
-				savings: parseFloat((itemCost * discountAmount).toFixed(2)),
-			};
-			discountedItems.push(result);
-			totalSavings += parseFloat((itemCost * discountAmount).toFixed(2));
-		}
+		totalSavings = discountAmount;
 	}
 
-	if (discountedItems.length < 1) {
-		return res.status(406).json({ code });
-	}
-
-	req.session.set("discountCode", { code, discountedItems, totalSavings });
+	req.session.set("discountCode", { code, discountedItems, totalSavings, isPercent });
 	await req.session.save();
 
-	return res.status(200).json({ code, discountedItems, totalSavings });
+	return res.status(200).json({ code, discountedItems, totalSavings, isPercent });
 };
 
 export default withSession(handler);
