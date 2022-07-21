@@ -176,7 +176,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 
 		const pendingInvoice = await stripe.invoices.create({
 			customer: customer?.id!,
-			auto_advance: true,
+			auto_advance: false,
 			collection_method: "charge_automatically",
 			metadata: {
 				boughtByDiscordId: user.id,
