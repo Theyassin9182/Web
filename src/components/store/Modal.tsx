@@ -64,7 +64,6 @@ export default function Modal({ productId, add, close }: Props) {
 
 	useEffect(() => {
 		if (detailsHeight === 0 && details.current) {
-			console.log(details.current?.clientHeight ?? 0);
 			setDetailsHeight(details.current?.clientHeight ?? 0);
 		}
 	});
@@ -155,24 +154,4 @@ export default function Modal({ productId, add, close }: Props) {
 			)}
 		</>
 	);
-
-	// return (
-	// 	<div
-	// 		id="modal-background"
-	// 		className="absolute top-0 left-0 z-[999999999999] grid h-[100vh] w-[100vw] place-items-center bg-black bg-opacity-70"
-	// 		onClick={() => close()}
-	// 	>
-	// 		<div
-	// 			className={clsx(
-	// 				"relative px-8 py-7 md:rounded-md",
-	// 				"h-screen w-full sm:h-4/6 sm:max-w-[480px]",
-	// 				"bg-light-200 text-black dark:bg-dank-500 dark:text-white",
-	// 				"motion-safe:animate-slide-in"
-	// 			)}
-	// 			onClick={(e) => e.stopPropagation()}
-	// 		>
-
-	// 		</div>
-	// 	</div>
-	// );
 }
