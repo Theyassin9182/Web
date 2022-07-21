@@ -71,7 +71,10 @@ export default function ActiveSubscription({ subscribedTo, openView }: Props) {
 					<p className={clsx("mt-2 text-xs text-red-400 dark:text-red-400")}>
 						Your subscription will end on:{" "}
 						<span className="underline">
-							{format(new Date(subscribedTo.currentPeriod.end * 1000), "LLLL do', yyyy, at' h:mm aaa")}
+							{format(
+								new Date(subscribedTo.currentPeriod.end * 1000),
+								"LLLL do',' yyyy',' 'at' h:mm aaa"
+							)}
 						</span>
 					</p>
 					<p className="text-xs text-neutral-500 dark:text-neutral-400">
