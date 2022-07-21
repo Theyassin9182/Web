@@ -109,7 +109,7 @@ export default function Modal({ productId, add }: Props) {
 								onClick={(e) => {
 									e.preventDefault();
 									add();
-									details.current?.parentElement?.closest("dialog")?.close();
+									(details.current?.parentElement?.closest("dialog") as any | undefined)?.close();
 								}}
 							>
 								Add to cart
