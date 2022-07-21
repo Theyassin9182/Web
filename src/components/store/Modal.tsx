@@ -14,10 +14,9 @@ import SimpleBar from "simplebar-react";
 interface Props {
 	productId: string;
 	add: () => void;
-	close?: () => void;
 }
 
-export default function Modal({ productId, add, close }: Props) {
+export default function Modal({ productId, add }: Props) {
 	const mdParser = new MarkdownIt();
 	const [loading, setLoading] = useState(true);
 	const [name, setName] = useState("");
@@ -109,9 +108,9 @@ export default function Modal({ productId, add, close }: Props) {
 							<Button
 								size="small"
 								className="mt-1"
-								onClick={() => {
+								onClick={(e) => {
+									e.preventDefault();
 									add();
-									// close();
 								}}
 							>
 								Add to cart
