@@ -6,8 +6,6 @@ import { toTitleCase } from "../../util/string";
 import axios from "axios";
 import { ProductDetails } from "src/pages/api/store/product/details";
 import LoadingPepe from "../LoadingPepe";
-import clsx from "clsx";
-import { Icon as Iconify } from "@iconify/react";
 import "simplebar/dist/simplebar.min.css";
 import SimpleBar from "simplebar-react";
 
