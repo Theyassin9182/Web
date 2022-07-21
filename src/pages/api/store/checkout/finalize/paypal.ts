@@ -103,8 +103,10 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 				code: coupon[0].code,
 				appliesTo: [],
 				name: coupon[0].coupon.name || "N/A",
-				decimal: discount.coupon.percent_off!,
-				percent: `${discount.coupon.percent_off}%`,
+				decimal: discount.coupon.percent_off ?? discount.coupon.amount_off!,
+				...(discount.coupon.percent_off
+					? { percent: `${discount.coupon.percent_off}%` }
+					: { amount: `$${(discount.coupon.amount_off! / 100).toFixed(2)}` }),
 			});
 		}
 

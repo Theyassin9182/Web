@@ -29,6 +29,7 @@ import { default as ProductDeleted } from "./events/stripe/product/deleted";
 import { default as ProductUpdated } from "./events/stripe/product/updated";
 
 import { RESTPostAPIWebhookWithTokenJSONBody } from "discord-api-types/v10";
+import { RequireExactlyOne } from "type-fest";
 
 export const config = {
 	api: {
@@ -47,14 +48,17 @@ export interface PaymentIntentItemResult {
 	image?: string;
 }
 
-export interface PaymentIntentItemDiscount {
+interface PaymentIntentItemDiscountRaw {
 	id: string;
 	name: string;
 	code: string;
 	appliesTo: string[];
 	decimal: number;
-	percent: string;
+	percent?: `${number}%`;
+	amount?: `$${string}`;
 }
+
+export type PaymentIntentItemDiscount = RequireExactlyOne<PaymentIntentItemDiscountRaw, "percent" | "amount">;
 
 export interface EventResponse {
 	result: RESTPostAPIWebhookWithTokenJSONBody | null;

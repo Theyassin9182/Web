@@ -76,18 +76,20 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 
 	try {
 		let discounts: PaymentIntentItemDiscount[] = [];
-		for (let i = 0; i < (invoice.discounts as Stripe.Discount[] | Stripe.DeletedDiscount[])?.length; i++) {
-			const discount = invoice.discounts![i] as Stripe.Discount | Stripe.DeletedDiscount;
+		for (let discount of invoice.discounts as Stripe.Discount[]) {
 			const { data: coupon } = await stripe.promotionCodes.list({
 				coupon: discount.coupon?.id,
 			});
+			console.log(coupon[0].coupon.name);
 			discounts.push({
 				id: discount.id,
 				code: coupon[0].code,
 				appliesTo: [],
 				name: coupon[0].coupon.name || "N/A",
-				decimal: discount.coupon.percent_off!,
-				percent: `${discount.coupon.percent_off}%`,
+				decimal: discount.coupon.percent_off ?? discount.coupon.amount_off!,
+				...(discount.coupon.percent_off
+					? { percent: `${discount.coupon.percent_off}%` }
+					: { amount: `$${(discount.coupon.amount_off! / 100).toFixed(2)}` }),
 			});
 		}
 

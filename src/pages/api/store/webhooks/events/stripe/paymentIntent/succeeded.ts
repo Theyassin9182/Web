@@ -24,8 +24,10 @@ export default async function (event: Stripe.Event, stripe: Stripe): Promise<Eve
 			code: coupon[0].code,
 			appliesTo: [],
 			name: coupon[0].coupon.name || "N/A",
-			decimal: discount.coupon.percent_off!,
-			percent: `${discount.coupon.percent_off}%`,
+			decimal: discount.coupon.percent_off ?? discount.coupon.amount_off!,
+			...(discount.coupon.percent_off
+				? { percent: `${discount.coupon.percent_off}%` }
+				: { amount: `$${(discount.coupon.amount_off! / 100).toFixed(2)}` }),
 		});
 	}
 
@@ -109,7 +111,9 @@ export default async function (event: Stripe.Event, stripe: Stripe): Promise<Eve
 						const item = items.find((i) => i.id === itemId);
 						return `> ${item?.name} (-$${(item?.price! * (discount.decimal / 100)).toFixed(2)})`;
 					});
-					return `**${discount.name}** (\`${discount.code}\`) - ${discount.percent}\n${itemsText.join("\n")}`;
+					return `**${discount.name}** (\`${discount.code}\`) - ${discount.percent ?? discount.amount}${
+						discount.percent ? `\n${itemsText.join("\n")}` : ""
+					}`;
 				})
 				.join("\n")}`,
 			inline: true,

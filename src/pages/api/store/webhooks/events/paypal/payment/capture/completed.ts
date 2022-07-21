@@ -117,7 +117,9 @@ export default async function (event: PayPalEvent, paypal: PayPal): Promise<Even
 						const item = items.find((i) => i.id === itemId);
 						return `> ${item?.name} (-$${(item?.price! * (discount.decimal / 100)).toFixed(2)})`;
 					});
-					return `**${discount.name}** (\`${discount.code}\`) - ${discount.percent}\n${itemsText.join("\n")}`;
+					return `**${discount.name}** (\`${discount.code}\`) - ${discount.percent ?? discount.amount}${
+						discount.percent ? `\n${itemsText.join("\n")}` : ""
+					}`;
 				})
 				.join("\n")}`,
 			inline: true,
@@ -130,8 +132,6 @@ export default async function (event: PayPalEvent, paypal: PayPal): Promise<Even
 		redis.del(`customer:purchase-history:${purchasedBy}`),
 		db.collection("purchases").updateOne({ _id: data.id }, { $set: { confirmed: true } }),
 	]);
-
-	console.log(fields);
 
 	return {
 		result: {
