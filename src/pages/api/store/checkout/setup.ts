@@ -167,12 +167,12 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 			}
 		}
 
-		for (let i = 0; i < cart.length; i++) {
+		for (let item of cart) {
 			await stripe.invoiceItems.create({
 				customer: customer?.id!,
 				currency: "usd",
-				price: cart[i].selectedPrice,
-				quantity: cart[i].quantity,
+				price: item.selectedPrice,
+				quantity: item.quantity,
 			});
 		}
 
