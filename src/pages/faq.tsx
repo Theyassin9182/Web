@@ -13,9 +13,7 @@ import { withSession } from "../util/session";
 
 export default function FaqPage({ user }: PageProps) {
 	const categories = Object.keys(FAQ);
-	const [currentCategory, setCurrentCategory] = useState<string>(
-		categories[0]
-	);
+	const [currentCategory, setCurrentCategory] = useState<string>(categories[0]);
 	const [questions, setQuestions] = useState<{ q: string; a: string }[]>();
 	const [expandedIds, setExpandedIds] = useState<string[]>([]);
 	const [search, setSearch] = useState("");
@@ -29,12 +27,8 @@ export default function FaqPage({ user }: PageProps) {
 			currentCategory.startsWith("all")
 				? allQuestions.filter(
 						(question) =>
-							question.q
-								.toLowerCase()
-								.includes(search.toLowerCase()) ||
-							question.a
-								.toLowerCase()
-								.includes(search.toLowerCase())
+							question.q.toLowerCase().includes(search.toLowerCase()) ||
+							question.a.toLowerCase().includes(search.toLowerCase())
 				  )
 				: FAQ[currentCategory]
 		);
@@ -47,7 +41,7 @@ export default function FaqPage({ user }: PageProps) {
 	return (
 		<Container title="FAQ" user={user}>
 			<div className="mt-20">
-			<Ad
+				<Ad
 					id="faq-top-mobile"
 					platform="mobile"
 					sizes={[
@@ -61,7 +55,7 @@ export default function FaqPage({ user }: PageProps) {
 					platform="desktop"
 					sizes={[
 						[728, 90],
-						[970, 90]
+						[970, 90],
 					]}
 				/>
 			</div>
@@ -70,28 +64,17 @@ export default function FaqPage({ user }: PageProps) {
 					<div className="font-montserrat text-4xl font-bold text-dank-200 dark:text-white">
 						FREQUENTLY ASKED QUESTIONS
 					</div>
-					<svg
-						className="absolute -top-8 -left-5 z-[-1] w-[130px]"
-						viewBox="0 0 52 24"
-						fill="#16c458"
-					>
+					<svg className="absolute -top-8 -left-5 -z-10 w-[130px]" viewBox="0 0 52 24" fill="#16c458">
 						<defs>
-							<pattern
-								id="dots"
-								x="0"
-								y="0"
-								width=".15"
-								height=".28"
-							>
+							<pattern id="dots" x="0" y="0" width=".15" height=".28">
 								<circle cx="1" cy="1" r="1"></circle>
 							</pattern>
 						</defs>
 						<rect fill="url(#dots)" width="42" height="20"></rect>
 					</svg>
 					<div className="max-w-3xl text-lg text-light-600 dark:text-light-300">
-						The most frequently asked questions can be found below.
-						Split into categories depending on what they are related
-						to.
+						The most frequently asked questions can be found below. Split into categories depending on what
+						they are related to.
 					</div>
 				</div>
 				<div className="flex items-center space-x-0 lg:space-x-4">
@@ -100,9 +83,7 @@ export default function FaqPage({ user }: PageProps) {
 							<div
 								className={clsx(
 									"cursor-pointer text-lg",
-									currentCategory == category
-										? "text-dank-300"
-										: "text-light-600 dark:text-light-300"
+									currentCategory == category ? "text-dank-300" : "text-light-600 dark:text-light-300"
 								)}
 								onClick={() => setCurrentCategory(category)}
 							>
@@ -115,13 +96,9 @@ export default function FaqPage({ user }: PageProps) {
 							content={
 								<div className="flex w-40 justify-between p-2 px-4 text-dark-100 dark:text-white">
 									<span>
-										{currentCategory.startsWith("all")
-											? "Search Results"
-											: currentCategory}
+										{currentCategory.startsWith("all") ? "Search Results" : currentCategory}
 									</span>
-									<span className="material-icons">
-										expand_more
-									</span>
+									<span className="material-icons">expand_more</span>
 								</div>
 							}
 							options={categories.map((category) => ({
@@ -133,10 +110,7 @@ export default function FaqPage({ user }: PageProps) {
 						/>
 					</div>
 					<div className="pl-4 lg:pl-0">
-						<Searchbox
-							placeholder="Find an answer for your quest"
-							setSearch={setSearch}
-						/>
+						<Searchbox placeholder="Find an answer for your quest" setSearch={setSearch} />
 					</div>
 				</div>
 				<div className="flex flex-col space-y-4">
@@ -176,5 +150,4 @@ export default function FaqPage({ user }: PageProps) {
 	);
 }
 
-export const getServerSideProps: GetServerSideProps =
-	withSession(unauthenticatedRoute);
+export const getServerSideProps: GetServerSideProps = withSession(unauthenticatedRoute);

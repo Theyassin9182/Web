@@ -27,7 +27,7 @@ export default function DashboardLinks({ user }: Props) {
 				<Avatar link={user.avatar} size="32" id={user.id} />
 			</div>
 			<div className="absolute bottom-0 left-0 mb-2 hidden h-16 w-full px-9 xl:block">
-				<div className="box-border flex h-14 w-full items-center justify-between rounded-md bg-[#D8DCDE] dark:bg-dank-500">
+				<div className="box-border flex h-14 w-full items-center justify-between rounded-md bg-slate-300 dark:bg-dank-500">
 					<div className="flex items-center justify-start pl-4">
 						<Avatar link={user.avatar} size="32" id={user.id} />
 						<div className="ml-2">

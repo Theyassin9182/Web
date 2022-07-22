@@ -470,7 +470,7 @@ export default function CheckoutForm({
 													cart.length >= 1 &&
 													discountedItems.map((item) => (
 														<li className="flex list-decimal justify-between text-sm">
-															<p className="dark:text-[#b4b4b4]">
+															<p className="dark:text-neutral-400">
 																• {cart.filter((_item) => _item.id === item.id)[0].name}
 															</p>
 															<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
@@ -481,7 +481,7 @@ export default function CheckoutForm({
 													))}
 												{thresholdDiscount && (
 													<li className="flex list-decimal justify-between text-sm">
-														<p className="flex items-center justify-center space-x-1 dark:text-[#b4b4b4]">
+														<p className="flex items-center justify-center space-x-1 dark:text-neutral-400">
 															<span>• Threshold discount</span>
 															<Tooltip content="10% Discount applied because base cart value exceeds $20">
 																<Iconify icon="ant-design:question-circle-filled" />

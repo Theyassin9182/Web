@@ -19,7 +19,7 @@ export default function CreatedBannerCard({ banner }: Props) {
 			<div className="h-32 w-full">
 				<div
 					className={clsx(
-						"left-0 top-0 z-[-1] h-32 min-h-full w-full bg-black/30 bg-cover bg-center bg-no-repeat bg-blend-multiply",
+						"left-0 top-0 -z-10 h-32 min-h-full w-full bg-black/30 bg-cover bg-center bg-no-repeat bg-blend-multiply",
 						(!banner.image || banner.image.length == 0) && "bg-light-500 dark:bg-dark-100"
 					)}
 					style={{

@@ -28,7 +28,7 @@ export default function FancyButton({ text, link, variant = "big" }: Props) {
 				</a>
 				<div
 					className={clsx(
-						"absolute top-[7px] left-[7px] z-[-1] h-full w-full",
+						"absolute top-[7px] left-[7px] -z-10 h-full w-full",
 						"border-[3px] border-dank-200",
 						"group-hover:top-0 group-hover:left-0",
 						"transition-all duration-200 ease-in-out"

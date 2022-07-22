@@ -154,7 +154,7 @@ export default function PagedBanner({
 			>
 				<div
 					className={clsx(
-						"absolute left-0 top-0 z-[-1] min-h-full w-full rounded-lg bg-black/30 bg-cover bg-center bg-no-repeat bg-blend-multiply",
+						"absolute left-0 top-0 -z-10 min-h-full w-full rounded-lg bg-black/30 bg-cover bg-center bg-no-repeat bg-blend-multiply",
 						(!page.image || page.image.length == 0) && "bg-light-500 dark:bg-dark-100"
 					)}
 					style={{

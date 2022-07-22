@@ -32,7 +32,7 @@ export default function Navlink({ icon, size = 22, text, href }: Props) {
 				</div>
 				<p
 					className={clsx(
-						active ? "text-dank-200" : "text-gray-800 group-hover:text-dank-100 dark:text-white",
+						active ? "text-dank-300" : "text-gray-800 group-hover:text-dank-100 dark:text-white",
 						"hidden xl:block"
 					)}
 				>

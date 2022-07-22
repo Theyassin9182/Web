@@ -448,11 +448,11 @@ export default function ProductCreator({ forceHide }: Props) {
 							className="group flex cursor-pointer items-center"
 							onClick={() => setSecondaryCollapsed((curr) => !curr)}
 						>
-							<div className="order-1 h-0.5 flex-none grow bg-[#c0c0c0] dark:bg-neutral-500 group-hover:dark:bg-white"></div>
+							<div className="order-1 h-0.5 flex-none grow bg-neutral-300 dark:bg-neutral-500 group-hover:dark:bg-white"></div>
 							<p className="order-2 mx-3 select-none text-neutral-500 dark:text-neutral-400 group-hover:dark:text-white">
 								{secondaryCollapsed ? "Expand" : "Collapse"}
 							</p>
-							<div className="order-3 h-0.5 flex-none grow bg-[#c0c0c0] dark:bg-neutral-500"></div>
+							<div className="order-3 h-0.5 flex-none grow bg-neutral-300 dark:bg-neutral-500"></div>
 						</div>
 						<div className={clsx(secondaryCollapsed ? "h-0" : "h-max ", "space-y-4 overflow-hidden")}>
 							<div className="">

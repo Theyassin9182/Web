@@ -14,12 +14,7 @@ interface Props {
 	margin?: keyof typeof margins;
 }
 
-export default function Tooltip({
-	content,
-	children,
-	delay = 350,
-	margin = "small",
-}: Props) {
+export default function Tooltip({ content, children, delay = 350, margin = "small" }: Props) {
 	const [active, setActive] = useState(false);
 	let timeout: NodeJS.Timeout;
 
@@ -35,16 +30,12 @@ export default function Tooltip({
 	};
 
 	return (
-		<div
-			className="relative inline-block"
-			onMouseEnter={show}
-			onMouseLeave={hide}
-		>
+		<div className="relative inline-block" onMouseEnter={show} onMouseLeave={hide}>
 			{children}
 			{active && (
 				<div
 					className={clsx(
-						"absolute left-1/2 z-[100] -translate-x-1/2 whitespace-nowrap leading-none",
+						"absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap leading-none",
 						"rounded-md bg-[#18191c] p-2 text-sm text-white",
 						margins[margin],
 						"transition-opacity duration-200 ease-in-out",
@@ -59,10 +50,7 @@ export default function Tooltip({
 						viewBox="0 0 255 255"
 						xmlSpace="preserve"
 					>
-						<polygon
-							className="fill-current"
-							points="0, 0 127.5, 127.5 255, 0"
-						/>
+						<polygon className="fill-current" points="0, 0 127.5, 127.5 255, 0" />
 					</svg>
 				</div>
 			)}

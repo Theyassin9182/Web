@@ -83,9 +83,7 @@ function Actions({ user, profile }: { user: User; profile: Profile }) {
 				options={[
 					user?.developer
 						? {
-								label: `${
-									profile.user.developer ? "Remove" : "Add"
-								} Developer`,
+								label: `${profile.user.developer ? "Remove" : "Add"} Developer`,
 								onClick: () => {
 									swap("developer");
 								},
@@ -93,9 +91,7 @@ function Actions({ user, profile }: { user: User; profile: Profile }) {
 						: null,
 					user?.modManager
 						? {
-								label: `${
-									profile.user.moderator ? "Remove" : "Add"
-								} Moderator`,
+								label: `${profile.user.moderator ? "Remove" : "Add"} Moderator`,
 								onClick: () => {
 									swap("moderator");
 								},
@@ -103,9 +99,7 @@ function Actions({ user, profile }: { user: User; profile: Profile }) {
 						: null,
 					user?.developer
 						? {
-								label: `${
-									profile.user.modManager ? "Remove" : "Add"
-								}  Mod Manager`,
+								label: `${profile.user.modManager ? "Remove" : "Add"}  Mod Manager`,
 								onClick: () => {
 									swap("modManager");
 								},
@@ -113,9 +107,7 @@ function Actions({ user, profile }: { user: User; profile: Profile }) {
 						: null,
 					user?.developer
 						? {
-								label: `${
-									profile.user.botModerator ? "Remove" : "Add"
-								} Bot Moderator`,
+								label: `${profile.user.botModerator ? "Remove" : "Add"} Bot Moderator`,
 								onClick: () => {
 									swap("botModerator");
 								},
@@ -123,9 +115,7 @@ function Actions({ user, profile }: { user: User; profile: Profile }) {
 						: null,
 					user?.developer
 						? {
-								label: `${
-									profile.user.honorable ? "Remove" : "Add"
-								} Honorable`,
+								label: `${profile.user.honorable ? "Remove" : "Add"} Honorable`,
 								onClick: () => {
 									swap("honorable");
 								},
@@ -181,25 +171,16 @@ function ActivityCard({ activity }: { activity: Activity }) {
 			<a className="rounded-md bg-light-500 p-4 text-sm dark:bg-dark-100">
 				<div className="flex items-center space-x-4">
 					<div className="flex h-10 w-10 items-center justify-center rounded-full bg-light-400 text-black dark:bg-dank-400 dark:text-white">
-						<div
-							className="material-icons"
-							style={{ fontSize: "20px" }}
-						>
+						<div className="material-icons" style={{ fontSize: "20px" }}>
 							{icon}
 						</div>
 					</div>
 					<div className="flex-1 text-sm">
-						<div className="break-all text-black dark:text-white">
-							{text}
-						</div>
+						<div className="break-all text-black dark:text-white">{text}</div>
 						<div className="text-light-600">
-							{formatDistance(
-								new Date(activity.createdAt),
-								new Date(),
-								{
-									addSuffix: true,
-								}
-							)}
+							{formatDistance(new Date(activity.createdAt), new Date(), {
+								addSuffix: true,
+							})}
 						</div>
 					</div>
 				</div>
@@ -232,11 +213,9 @@ export default function ProfilePage({ user }: PageProps) {
 					router.replace(`/@${data.user.vanity}`);
 				}
 
-				axios(`/api/community/contributors/place/${data.user.id}`).then(
-					({ data }) => {
-						setRank(data.place);
-					}
-				);
+				axios(`/api/community/contributors/place/${data.user.id}`).then(({ data }) => {
+					setRank(data.place);
+				});
 			})
 			.catch(() => {
 				router.push("/community/");
@@ -279,13 +258,11 @@ export default function ProfilePage({ user }: PageProps) {
 						<div className="relative flex h-auto flex-col justify-end">
 							<div
 								className={clsx(
-									"z-[-1] w-full rounded-lg bg-cover bg-center bg-no-repeat bg-blend-multiply",
+									"-z-10 w-full rounded-lg bg-cover bg-center bg-no-repeat bg-blend-multiply",
 									profile.user.banner ? "h-56" : "h-32"
 								)}
 								style={{
-									backgroundImage: `url("${
-										profile.user.banner || "/img/banner.png"
-									}")`,
+									backgroundImage: `url("${profile.user.banner || "/img/banner.png"}")`,
 								}}
 							></div>
 						</div>
@@ -297,10 +274,7 @@ export default function ProfilePage({ user }: PageProps) {
 										<div className="absolute -top-16 hidden md:inline-block">
 											<Avatar
 												id={profile.user.id}
-												link={
-													profile.user.avatar +
-													"?size=512"
-												}
+												link={profile.user.avatar + "?size=512"}
 												size="120px"
 												className="rounded-full border-4 border-light-500 dark:border-dark-400"
 											/>
@@ -308,10 +282,7 @@ export default function ProfilePage({ user }: PageProps) {
 										<div className="inline-block md:hidden">
 											<Avatar
 												id={profile.user.id}
-												link={
-													profile.user.avatar +
-													"?size=512"
-												}
+												link={profile.user.avatar + "?size=512"}
 												size="96px"
 												className="rounded-full border-4 border-light-500 dark:border-dark-400"
 											/>
@@ -330,63 +301,33 @@ export default function ProfilePage({ user }: PageProps) {
 											{rank != -1 && (
 												<div className="flex md:inline-block">
 													<div className="rounded-md bg-light-500 px-2 py-0.5 text-xs text-dank-200 dark:bg-dank-500 dark:text-dank-100">
-														Rank #
-														{rank.toLocaleString()}
+														Rank #{rank.toLocaleString()}
 													</div>
 												</div>
 											)}
 											<div>
-												{profile.user.developer && (
-													<Badge role="developer" />
-												)}
-												{profile.user.moderator && (
-													<Badge role="moderator" />
-												)}
-												{profile.user.botModerator && (
-													<Badge role="botModerator" />
-												)}
-												{profile.user.modManager && (
-													<Badge role="modManager" />
-												)}
-												{profile.user.honorable && (
-													<Badge role="honorable" />
-												)}
+												{profile.user.developer && <Badge role="developer" />}
+												{profile.user.moderator && <Badge role="moderator" />}
+												{profile.user.botModerator && <Badge role="botModerator" />}
+												{profile.user.modManager && <Badge role="modManager" />}
+												{profile.user.honorable && <Badge role="honorable" />}
 											</div>
 										</div>
 									</div>
 								</div>
 								<div className="hidden items-center space-x-4 md:flex">
-									{(user?.moderator ||
-										user?.honorable ||
-										user?.perks) &&
-										(user.id == profile.user.id ||
-											user.developer) && (
-											<Button
-												variant="dark"
-												onClick={() =>
-													setEditing(!editing)
-												}
-											>
+									{(user?.moderator || user?.honorable || user?.perks) &&
+										(user.id == profile.user.id || user.developer) && (
+											<Button variant="dark" onClick={() => setEditing(!editing)}>
 												Edit Profile
 											</Button>
 										)}
 
-									{user?.moderator && (
-										<Actions
-											user={user!}
-											profile={profile}
-										/>
-									)}
+									{user?.moderator && <Actions user={user!} profile={profile} />}
 
 									{user?.moderator && (
-										<Button
-											variant="dark"
-											onClick={() => switchPerks()}
-										>
-											{profile.user.perks
-												? "Remove"
-												: "Grant"}{" "}
-											Perks
+										<Button variant="dark" onClick={() => switchPerks()}>
+											{profile.user.perks ? "Remove" : "Grant"} Perks
 										</Button>
 									)}
 								</div>
@@ -420,8 +361,7 @@ export default function ProfilePage({ user }: PageProps) {
 										<Input
 											onChange={(e) => {
 												const copy = { ...profile };
-												copy.user.position =
-													e.target.value;
+												copy.user.position = e.target.value;
 												setProfile(copy);
 											}}
 											variant="short"
@@ -435,8 +375,7 @@ export default function ProfilePage({ user }: PageProps) {
 											<Input
 												onChange={(e) => {
 													const copy = { ...profile };
-													copy.user.about =
-														e.target.value;
+													copy.user.about = e.target.value;
 													setProfile(copy);
 												}}
 												variant="short"
@@ -445,9 +384,7 @@ export default function ProfilePage({ user }: PageProps) {
 												value={profile.user.about || ""}
 											/>
 
-											<div className="text-sm text-black dark:text-white">
-												Socials
-											</div>
+											<div className="text-sm text-black dark:text-white">Socials</div>
 											{[
 												"Discord",
 												"GitHub",
@@ -462,46 +399,29 @@ export default function ProfilePage({ user }: PageProps) {
 											].map((social) => (
 												<div className="flex items-center space-x-2">
 													<div>
-														<img
-															src={`/img/socials/${social}.svg`}
-															className="w-8"
-														/>
+														<img src={`/img/socials/${social}.svg`} className="w-8" />
 													</div>
 													<Input
 														onChange={(e) => {
 															const copy = {
 																...profile,
 															};
-															if (
-																!copy.user
-																	.socials
-															) {
-																copy.user.socials =
-																	{};
+															if (!copy.user.socials) {
+																copy.user.socials = {};
 															}
-															copy.user.socials[
-																social
-															] = e.target.value;
+															copy.user.socials[social] = e.target.value;
 															setProfile(copy);
 														}}
 														variant="short"
 														block
 														placeholder="https://dankmemer.lol/"
-														value={
-															profile.user
-																.socials?.[
-																social
-															] || ""
-														}
+														value={profile.user.socials?.[social] || ""}
 													/>
 												</div>
 											))}
 										</>
 									)}
-									<Button
-										variant="primary"
-										onClick={() => updateProfile()}
-									>
+									<Button variant="primary" onClick={() => updateProfile()}>
 										Save
 									</Button>
 								</div>
@@ -515,24 +435,13 @@ export default function ProfilePage({ user }: PageProps) {
 									[profile.posts.length, `Post?s made`],
 									[profile.comments, "Comment?s made"],
 									[profile.upvotes, "Upvote?s given"],
-									[
-										profile.posts.reduce(
-											(acc, cur) => acc + cur.upvotes,
-											0
-										),
-										"Upvote?s received",
-									],
+									[profile.posts.reduce((acc, cur) => acc + cur.upvotes, 0), "Upvote?s received"],
 									[0, "Award?s received"],
 								].map(([count, title]) => (
 									<div className="flex flex-col items-center -space-y-1">
-										<div className="text-lg font-bold text-black dark:text-white">
-											{count}
-										</div>
+										<div className="text-lg font-bold text-black dark:text-white">{count}</div>
 										<div className="text-center text-sm text-light-600">
-											{(title as string).replace(
-												/\?s/g,
-												count == 1 ? "" : "s"
-											)}
+											{(title as string).replace(/\?s/g, count == 1 ? "" : "s")}
 										</div>
 									</div>
 								))}
@@ -568,13 +477,9 @@ export default function ProfilePage({ user }: PageProps) {
 										<>
 											<div>Recent Activity</div>
 											<div className="flex flex-col space-y-2">
-												{profile.activities.map(
-													(activity) => (
-														<ActivityCard
-															activity={activity}
-														/>
-													)
-												)}
+												{profile.activities.map((activity) => (
+													<ActivityCard activity={activity} />
+												))}
 											</div>
 										</>
 									)}

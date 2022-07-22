@@ -568,9 +568,6 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 															size="medium"
 															className={clsx(
 																"w-full max-w-max rounded-md",
-																discountInput?.length < 1 || processingChange
-																	? "!bg-[#7F847F] text-[#333533]"
-																	: "",
 																appliedDiscount &&
 																	appliedCode === discountInput &&
 																	"bg-red-500"
@@ -578,7 +575,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 															onClick={
 																appliedDiscount ? removeDiscount : submitDiscountCode
 															}
-															disabled={processingChange}
+															disabled={discountInput?.length < 1 || processingChange}
 														>
 															{appliedDiscount && appliedCode === discountInput
 																? "Clear"
@@ -618,7 +615,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 																		)[0];
 																		return (
 																			<li className="flex list-decimal justify-between text-sm">
-																				<p className="dark:text-[#b4b4b4]">
+																				<p className="dark:text-neutral-400">
 																					• {cartItem.quantity}x{" "}
 																					{cartItem.name}
 																				</p>
@@ -631,7 +628,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 																	})}
 																	{thresholdDiscount && (
 																		<li className="flex list-decimal items-center justify-between text-sm">
-																			<p className="flex items-center justify-center space-x-1 dark:text-[#b4b4b4]">
+																			<p className="flex items-center justify-center space-x-1 dark:text-neutral-400">
 																				<span>• Threshold discount</span>
 																				<Tooltip content="10% Discount applied because base cart value exceeds $20">
 																					<Iconify icon="ant-design:question-circle-filled" />
@@ -676,7 +673,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 
 						<Button
 							size="medium"
-							className={clsx("mt-3 w-full", processingChange ? "bg-[#7F847F] text-[#333533]" : "")}
+							className="mt-3 w-full"
 							onClick={goToCheckout}
 							disabled={processingChange || (isGift && !validGiftRecipient)}
 						>
