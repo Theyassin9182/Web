@@ -500,7 +500,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 												!isGift
 													? "bg-dank-300 text-white"
 													: "bg-black/10 text-neutral-600 dark:bg-black/30 dark:text-neutral-400",
-												"rounded-l-md border-[1px] border-transparent px-3 py-1"
+												"rounded-l-md border border-transparent px-3 py-1"
 											)}
 											onClick={() => setIsGift(false)}
 										>
@@ -511,7 +511,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 												isGift
 													? "bg-dank-300 text-white"
 													: "bg-black/10 text-neutral-600 dark:bg-black/30 dark:text-neutral-400",
-												"rounded-r-md border-[1px] border-transparent px-3 py-1"
+												"rounded-r-md border border-transparent px-3 py-1"
 											)}
 											onClick={() => setIsGift(true)}
 										>

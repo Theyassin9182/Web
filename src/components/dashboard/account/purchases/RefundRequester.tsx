@@ -132,7 +132,7 @@ export default function DisputeCreator({ purchase, userId, close }: Props) {
 						<div
 							className={clsx(
 								"flex items-center justify-between",
-								"rounded-md border-[1px] border-[#3C3C3C]",
+								"rounded-md border border-[#3C3C3C]",
 								"bg-light-500 text-neutral-800 transition-colors dark:bg-black/40 dark:text-neutral-400",
 								"w-full px-3 py-2 text-sm"
 							)}
@@ -153,7 +153,7 @@ export default function DisputeCreator({ purchase, userId, close }: Props) {
 								<div
 									className={clsx(
 										"flex items-center justify-between",
-										"rounded-md border-[1px] border-[#3C3C3C]",
+										"rounded-md border border-[#3C3C3C]",
 										"bg-light-500 text-neutral-800 transition-colors dark:bg-black/40 dark:text-neutral-400",
 										"w-full px-3 py-2 text-sm"
 									)}
@@ -184,7 +184,7 @@ export default function DisputeCreator({ purchase, userId, close }: Props) {
 							"Please explain as in-depth as possible the reasoning for your refund request. Keep in mind that the nicer you are, the more likely we are to give you a full refund."
 						}
 						className={clsx(
-							"h-48 max-h-[450px] min-h-[50px] w-full resize-y rounded-md border-[1px] px-3 py-2",
+							"h-48 max-h-[450px] min-h-[50px] w-full resize-y rounded-md border px-3 py-2",
 							"font-inter text-sm text-neutral-800 dark:text-white",
 							"border-neutral-300 focus-visible:border-dank-300 focus-visible:outline-none dark:border-neutral-700 dark:bg-dark-400 placeholder:dark:text-neutral-400"
 						)}

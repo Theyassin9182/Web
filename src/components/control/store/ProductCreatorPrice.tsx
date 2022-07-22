@@ -4,6 +4,7 @@ import Dropdown from "src/components/ui/Dropdown";
 import Input from "src/components/store/Input";
 import { Icon as Iconify } from "@iconify/react";
 import Tooltip from "src/components/ui/Tooltip";
+import { billingPeriod } from "src/components/store/cart/CartItem";
 
 interface Props {
 	id: string;
@@ -85,7 +86,7 @@ export default function ProductCreatorPrice({
 									<div
 										className={clsx(
 											"flex items-center justify-between",
-											"rounded-md border-[1px] border-[#3C3C3C]",
+											"rounded-md border border-[#3C3C3C]",
 											"bg-light-500 transition-colors dark:bg-black/30 dark:text-neutral-400",
 											"w-full px-3 py-2 text-sm"
 										)}
@@ -136,15 +137,7 @@ export default function ProductCreatorPrice({
 							every{" "}
 							<span className="text-dank-300">
 								{parseInt(billingIntervalCount) > 1 ? billingIntervalCount : ""}{" "}
-								{billingInterval === "Daily"
-									? "day"
-									: billingInterval === "Weekly"
-									? "week"
-									: billingInterval === "Monthly"
-									? "month"
-									: billingInterval === "Annually"
-									? "year"
-									: ""}
+								{billingPeriod[billingInterval as keyof typeof billingPeriod]}
 								{parseInt(billingIntervalCount) > 1 ? "s" : ""}
 							</span>
 						</>

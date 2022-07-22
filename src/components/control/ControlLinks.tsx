@@ -7,6 +7,7 @@ import SimpleBar from "simplebar-react";
 import "simplebar/dist/simplebar.min.css";
 import { useEffect } from "react";
 import { offsetVerticalSimplebar } from "src/util/simplebarOffsets";
+import { Avatar } from "../Avatar";
 
 interface Props {
 	user: User;
@@ -64,12 +65,12 @@ export default function ControlLinks({ user }: Props) {
 				</LinkGroup>
 			</SimpleBar>
 			<div className="absolute bottom-5 left-0 ml-6 flex justify-center xl:hidden">
-				<img src={user.avatar} width={32} className="rounded-full" />
+				<Avatar link={user.avatar} size="32" id={user.id} />
 			</div>
 			<div className="absolute bottom-0 left-0 mb-2 hidden h-16 w-full px-9 xl:block">
 				<div className="box-border flex h-14 w-full items-center justify-between rounded-md bg-[#D8DCDE] dark:bg-dank-500">
 					<div className="flex items-center justify-start pl-4">
-						<img src={user.avatar} width={32} className="rounded-full" />
+						<Avatar link={user.avatar} size="32" id={user.id} />
 						<div className="ml-2">
 							<p className="leading-none text-gray-800 dark:text-white">{user.username}</p>
 							<p className="text-xs leading-none text-light-600">#{user.discriminator}</p>

@@ -31,10 +31,10 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 
 	const dbCustomer = await db.collection("customers").findOne({ discordId: user.id });
 
-	let customer;
+	let customer: Stripe.Customer;
 	if (dbCustomer) {
-		customer = await stripe.customers.retrieve(dbCustomer._id);
-	} else if (!dbCustomer) {
+		customer = (await stripe.customers.retrieve(dbCustomer._id)) as Stripe.Customer;
+	} else {
 		try {
 			const unrecordedCustomer = (
 				await stripe.customers.search({
@@ -167,14 +167,16 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 			}
 		}
 
-		for (let item of cart) {
-			await stripe.invoiceItems.create({
-				customer: customer?.id!,
-				currency: "usd",
-				price: item.selectedPrice,
-				quantity: item.quantity,
-			});
-		}
+		await Promise.all(
+			cart.map((item) =>
+				stripe.invoiceItems.create({
+					customer: (customer as Stripe.Customer)?.id!,
+					currency: "usd",
+					price: item.selectedPrice,
+					quantity: item.quantity,
+				})
+			)
+		);
 
 		/**
 		 * Add Sales tax to the Stripe total. The 10% discount for orders >= $20

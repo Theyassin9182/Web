@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { isAfter } from "date-fns";
 import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Title } from "src/components/Title";
 import Button from "src/components/ui/Button";
 import Link from "src/components/ui/Link";
@@ -16,6 +16,7 @@ interface Props {
 
 export default function AgeVerification({ age, country }: Props) {
 	const router = useRouter();
+	const today = useRef(new Date());
 	const [userAge, setUserAge] = useState(age);
 	const [verifying, setVerifying] = useState(false);
 	const [legalAge, setLegalAge] = useState<boolean>(
@@ -88,14 +89,14 @@ export default function AgeVerification({ age, country }: Props) {
 						label="Date of birth"
 						width="medium"
 						onChange={(e) => {
-							if (!isAfter(new Date(e.target.value), new Date())) {
+							if (!isAfter(new Date(e.target.value), today.current)) {
 								setDate(e.target.value);
 							}
 						}}
-						max={`${new Date().getFullYear()}-${(new Date().getMonth() + 1).toLocaleString("en-US", {
+						max={`${today.current.getFullYear()}-${(today.current.getMonth() + 1).toLocaleString("en-US", {
 							minimumIntegerDigits: 2,
 							useGrouping: false,
-						})}-${new Date().getDate().toLocaleString("en-US", {
+						})}-${today.current.getDate().toLocaleString("en-US", {
 							minimumIntegerDigits: 2,
 							useGrouping: false,
 						})}`}

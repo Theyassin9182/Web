@@ -19,6 +19,8 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	const paymentIntent = await stripe.paymentIntents.retrieve(invoice.payment_intent as string);
 	const paymentMethod = await stripe.paymentMethods.retrieve(paymentIntent.payment_method as string);
 
+	const today = new Date();
+
 	return res.status(200).json({
 		// paymentIntent,
 		invoice_email: paymentIntent.receipt_email,
@@ -31,9 +33,9 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 			},
 			last4: parseInt(paymentMethod.card?.last4!),
 			expired:
-				paymentMethod.card?.exp_year! <= new Date().getFullYear() ||
-				(paymentMethod.card?.exp_year! <= new Date().getFullYear() &&
-					paymentMethod.card?.exp_month! < new Date().getMonth() + 1),
+				paymentMethod.card?.exp_year! <= today.getFullYear() ||
+				(paymentMethod.card?.exp_year! <= today.getFullYear() &&
+					paymentMethod.card?.exp_month! < today.getMonth() + 1),
 		},
 	} as StripePurchaseDetails);
 };

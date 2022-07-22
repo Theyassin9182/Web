@@ -80,7 +80,7 @@ function Content({ userId }: Props) {
 						},
 					},
 					classes: {
-						base: "mt-1 px-3 py-2 border-[1px] bg-white border-neutral-300 dark:border-neutral-700 dark:bg-black/30 rounded-md focus:border-dank-300",
+						base: "mt-1 px-3 py-2 border bg-white border-neutral-300 dark:border-neutral-700 dark:bg-black/30 rounded-md focus:border-dank-300",
 						focus: "border-[#199532] outline-none",
 						invalid: "border-[#F84A4A]",
 					},

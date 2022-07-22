@@ -105,6 +105,8 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 			type: "card",
 		});
 
+		const today = new Date();
+
 		return res.status(200).json({
 			...(_customer &&
 				_customer.subscription && {
@@ -123,9 +125,9 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 								},
 								last4: defaultPaymentMethod.card?.last4,
 								expired:
-									defaultPaymentMethod.card?.exp_year! <= new Date().getFullYear() ||
-									(defaultPaymentMethod.card?.exp_year! <= new Date().getFullYear() &&
-										defaultPaymentMethod.card?.exp_month! < new Date().getMonth() + 1),
+									defaultPaymentMethod.card?.exp_year! <= today.getFullYear() ||
+									(defaultPaymentMethod.card?.exp_year! <= today.getFullYear() &&
+										defaultPaymentMethod.card?.exp_month! < today.getMonth() + 1),
 							},
 					  }
 					: null,
@@ -143,9 +145,9 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 								},
 								last4: pm.card?.last4,
 								expired:
-									pm.card?.exp_year! <= new Date().getFullYear() ||
-									(pm.card?.exp_year! <= new Date().getFullYear() &&
-										pm.card?.exp_month! < new Date().getMonth() + 1),
+									pm.card?.exp_year! <= today.getFullYear() ||
+									(pm.card?.exp_year! <= today.getFullYear() &&
+										pm.card?.exp_month! < today.getMonth() + 1),
 							},
 						};
 					}),

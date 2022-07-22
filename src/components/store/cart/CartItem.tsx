@@ -119,7 +119,7 @@ export default function CartItem({
 							content={
 								<div
 									className={clsx(
-										"flex items-center justify-center rounded-md border-[1px] border-[#3C3C3C] bg-[#0C120D] transition-colors dark:text-[#707070] hover:dark:text-[#cccccc]",
+										"flex items-center justify-center rounded-md border border-[#3C3C3C] bg-[#0C120D] transition-colors dark:text-[#707070] hover:dark:text-[#cccccc]",
 										size === "small" ? "px-2 py-1 text-xs" : "px-3 py-[6px] text-xs xl:text-sm"
 									)}
 								>

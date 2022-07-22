@@ -17,7 +17,7 @@ export default function ColumnSelector({ instance }: Props) {
 					<div
 						className={clsx(
 							"flex items-center justify-between",
-							"rounded-md border-[1px] border-[#3C3C3C]",
+							"rounded-md border border-[#3C3C3C]",
 							"bg-light-500 text-neutral-700 transition-colors dark:bg-dark-100 dark:text-neutral-400 hover:dark:text-neutral-200",
 							"w-44 px-4 py-2 text-sm"
 						)}

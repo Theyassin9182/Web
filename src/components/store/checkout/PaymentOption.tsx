@@ -11,7 +11,7 @@ export default function PaymentOption({ icons, selected, select }: Props) {
 	return (
 		<div
 			className={clsx(
-				"mr-3 flex cursor-pointer select-none items-center justify-center rounded-md border-[1px] py-[6px] px-3",
+				"mr-3 flex cursor-pointer select-none items-center justify-center rounded-md border py-[6px] px-3",
 				selected ? "border-dank-300" : "border-black/30 dark:border-white/30"
 			)}
 			onClick={select}

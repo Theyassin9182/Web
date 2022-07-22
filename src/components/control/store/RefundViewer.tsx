@@ -22,6 +22,9 @@ export default function RefundViewer({ refund }: Props) {
 				<Title size="xsmall" className="font-semibold">
 					Contact methods
 				</Title>
+				<Link href={`/@${refund.purchasedBy}`} className="!text-dank-300 dark:text-dank-300">
+					Community profile
+				</Link>
 				<Link
 					href={`https://discord.com/users/${refund.purchasedBy}`}
 					className="!text-dank-300 dark:text-dank-300"

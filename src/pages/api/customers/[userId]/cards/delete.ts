@@ -57,9 +57,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	}
 
 	try {
-		for (let id of req.body.ids) {
-			await stripe.paymentMethods.detach(id);
-		}
+		await Promise.all(req.body.ids.map((id: string) => stripe.paymentMethods.detach(id)));
 		return res.status(200).json({ message: "Card(s) successfully deleted from account." });
 	} catch (e: any) {
 		console.error(

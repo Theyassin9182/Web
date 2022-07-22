@@ -61,7 +61,7 @@ export default function PurchaseFinder({ showPurchase }: Props) {
 				<Button
 					size="medium-large"
 					variant={orderId.length >= 10 ? "primary" : "dark"}
-					className={clsx(!(orderId.length >= 10) && "cursor-not-allowed", "w-full")}
+					className={clsx(orderId.length < 10 && "cursor-not-allowed", "w-full")}
 					onClick={submitChanges}
 				>
 					Search

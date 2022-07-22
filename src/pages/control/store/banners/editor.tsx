@@ -198,7 +198,7 @@ export default function BannerEditor({ user, bannerId }: PageProps & { bannerId?
 										<div
 											className={clsx(
 												"flex items-center justify-between",
-												"rounded-md border-[1px] border-[#3C3C3C]",
+												"rounded-md border border-[#3C3C3C]",
 												"bg-light-500 text-neutral-800 transition-colors dark:bg-black/40 dark:text-neutral-400",
 												"w-full px-3 py-2 text-sm"
 											)}
@@ -245,7 +245,7 @@ export default function BannerEditor({ user, bannerId }: PageProps & { bannerId?
 										<div
 											className={clsx(
 												"flex items-center justify-between",
-												"rounded-md border-[1px] border-[#3C3C3C]",
+												"rounded-md border border-[#3C3C3C]",
 												"bg-light-500 text-neutral-800 transition-colors dark:bg-black/40 dark:text-neutral-400",
 												"w-full px-3 py-2 text-sm"
 											)}

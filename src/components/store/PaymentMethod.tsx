@@ -27,7 +27,7 @@ export default function PaymentMethod({
 	return (
 		<div
 			className={clsx(
-				"mt-1 flex select-none items-center justify-between rounded-md border-[1px] border-black/40 px-4 py-3 dark:border-white/30 dark:bg-dank-500",
+				"mt-1 flex select-none items-center justify-between rounded-md border border-black/40 px-4 py-3 dark:border-white/30 dark:bg-dank-500",
 				selectable && selected ? "!border-dank-300 dark:!border-dank-300" : "dark:border-white/30",
 				selectable && "cursor-pointer",
 				className
@@ -50,18 +50,7 @@ export default function PaymentMethod({
 					) : (
 						<Checkbox style="border" state={selected} className="mt-0 mr-1" callback={select} />
 					))}
-				{paymentMethod.card.brand === "visa" && (
-					<Image src={"/img/store/cards/visa.svg"} width={30} height={30} />
-				)}
-				{paymentMethod.card.brand === "mastercard" && (
-					<Image src={"/img/store/cards/mastercard.svg"} width={30} height={30} />
-				)}
-				{paymentMethod.card.brand === "discover" && (
-					<Image src={"/img/store/cards/discover.svg"} width={30} height={30} />
-				)}
-				{paymentMethod.card.brand === "amex" && (
-					<Image src={"/img/store/cards/amex.svg"} width={30} height={30} />
-				)}
+				<Image src={`/img/store/cards/${paymentMethod.card.brand}.svg`} width={30} height={30} />
 				<p className="ml-3 text-sm text-black dark:text-white">
 					{toTitleCase(paymentMethod.card.brand)}{" "}
 					<span className="hidden sm:inline">

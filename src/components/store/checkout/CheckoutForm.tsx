@@ -57,7 +57,7 @@ export interface CardData {
 }
 
 const StripeInputBaseStyles =
-	"mt-1 px-3 py-2 border-[1px] bg-white border-neutral-300 dark:border-neutral-700 dark:bg-black/30 rounded-md focus:border-dank-300";
+	"mt-1 px-3 py-2 border bg-white border-neutral-300 dark:border-neutral-700 dark:bg-black/30 rounded-md focus:border-dank-300";
 
 export default function CheckoutForm({
 	clientSecret,
@@ -300,23 +300,9 @@ export default function CheckoutForm({
 					<Title size="small">Payment Method</Title>
 					<div className="mt-3 flex flex-wrap justify-start gap-y-3">
 						<PaymentOption
-							icons={[
-								<Image
-									src={"/img/store/cards/visa.svg"}
-									key="visa"
-									className="mr-1"
-									width={26}
-									height={20}
-								/>,
-								<Image
-									src={"/img/store/cards/mastercard.svg"}
-									key="mastercard"
-									width={26}
-									height={20}
-								/>,
-								<Image src={"/img/store/cards/amex.svg"} key="amex" width={26} height={20} />,
-								<Image src={"/img/store/cards/discover.svg"} key="discover" width={26} height={20} />,
-							]}
+							icons={["visa", "mastercard", "amex", "discover"].map((card) => (
+								<Image src={`/img/store/cards/${card}.svg`} key={card} width={26} height={20} />
+							))}
 							selected={selectedPaymentOption === "Card"}
 							select={() => setSelectedPaymentOption("Card")}
 						/>

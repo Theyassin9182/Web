@@ -249,7 +249,7 @@ export default function ProductCreator({ forceHide }: Props) {
 									<div
 										className={clsx(
 											"flex items-center justify-between",
-											"rounded-md border-[1px] border-[#3C3C3C]",
+											"rounded-md border border-[#3C3C3C]",
 											"bg-light-500 transition-colors dark:bg-black/40 dark:text-neutral-400",
 											"w-full px-3 py-2 text-sm"
 										)}
@@ -354,7 +354,7 @@ export default function ProductCreator({ forceHide }: Props) {
 										<div
 											className={clsx(
 												"flex items-center justify-between",
-												"rounded-md border-[1px] border-[#3C3C3C]",
+												"rounded-md border border-[#3C3C3C]",
 												"bg-light-500 transition-colors dark:bg-black/40 dark:text-neutral-400",
 												"w-full px-3 py-2 text-sm"
 											)}
@@ -396,7 +396,7 @@ export default function ProductCreator({ forceHide }: Props) {
 							placeholder={
 								"This is purely for Stripe and will not be shown on the store page. It may appear on invoices."
 							}
-							className="h-20 w-full resize-none rounded-md border-[1px] border-neutral-300 px-3 py-2 font-inter text-sm focus-visible:border-dank-300 focus-visible:outline-none dark:border-neutral-700 dark:bg-black/30"
+							className="h-20 w-full resize-none rounded-md border border-neutral-300 px-3 py-2 font-inter text-sm focus-visible:border-dank-300 focus-visible:outline-none dark:border-neutral-700 dark:bg-black/30"
 						/>
 					</div>
 				</div>
@@ -423,7 +423,7 @@ export default function ProductCreator({ forceHide }: Props) {
 						value={primaryBody}
 						onChange={(e) => setPrimaryBody(e.target.value)}
 						placeholder={"What is so special about this product? Markdown is supported in this field."}
-						className="min-h-[38px] w-full resize-y rounded-md border-[1px] border-neutral-300 px-3 py-2 font-inter text-sm focus-visible:border-dank-300 focus-visible:outline-none dark:border-neutral-700 dark:bg-black/30"
+						className="min-h-[38px] w-full resize-y rounded-md border border-neutral-300 px-3 py-2 font-inter text-sm focus-visible:border-dank-300 focus-visible:outline-none dark:border-neutral-700 dark:bg-black/30"
 					/>
 				</div>
 				{!secondaryEnabled && (
@@ -481,7 +481,7 @@ export default function ProductCreator({ forceHide }: Props) {
 									placeholder={
 										"What else is so interesting about this product? Markdown is supported in this field."
 									}
-									className="min-h-[38px] w-full resize-y rounded-md border-[1px] border-neutral-300 px-3 py-2 font-inter text-sm focus-visible:border-dank-300 focus-visible:outline-none dark:border-neutral-700 dark:bg-black/30"
+									className="min-h-[38px] w-full resize-y rounded-md border border-neutral-300 px-3 py-2 font-inter text-sm focus-visible:border-dank-300 focus-visible:outline-none dark:border-neutral-700 dark:bg-black/30"
 								/>
 							</div>
 							<div className="grid select-none place-items-center">

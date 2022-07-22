@@ -195,7 +195,7 @@ export default function Navbar({ user }: Props) {
 									</Button>
 								</div>
 							) : (
-								<div className="mt-5 border-t-[1px] border-dank-600 pt-5">
+								<div className="mt-5 border-t border-dank-600 pt-5">
 									<Button variant="primary" size="medium" block href="/api/auth/login">
 										Login
 									</Button>

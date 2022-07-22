@@ -13,9 +13,9 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	}
 
 	const db = await dbConnect();
-	let refundRequests = await db.collection("refunds").find({}).toArray();
+	const refunds = await db.collection("refunds").find({}).toArray();
 
-	return res.status(200).json({ refunds: refundRequests });
+	return res.status(200).json({ refunds });
 };
 
 export default withSession(handler);

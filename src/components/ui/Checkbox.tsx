@@ -17,7 +17,7 @@ export default function Checkbox({ state, style = "border", callback, children =
 				className={clsx(
 					!state ? "border-[#3C3C3C]" : "border-dank-300",
 					style === "fill" && state && "!bg-dank-300",
-					"relative mr-2 h-4 min-w-[1rem] cursor-pointer rounded border-[1px] transition-colors dark:bg-black/30"
+					"relative mr-2 h-4 min-w-[1rem] cursor-pointer rounded border transition-colors dark:bg-black/30"
 				)}
 			>
 				{state && (
