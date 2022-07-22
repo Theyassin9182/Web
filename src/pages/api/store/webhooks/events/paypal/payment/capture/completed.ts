@@ -142,7 +142,7 @@ export default async function (event: PayPalEvent, paypal: PayPal): Promise<Even
 					color: 2777007,
 					fields,
 					footer: {
-						text: `Total purchase value: $${total} (incl. sales tax)`,
+						text: `Total purchase value: $${total} (incl. sales tax and discounts)`,
 					},
 				},
 			],

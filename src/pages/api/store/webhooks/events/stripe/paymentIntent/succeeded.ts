@@ -133,7 +133,9 @@ export default async function (event: Stripe.Event, stripe: Stripe): Promise<Eve
 					color: 6777310,
 					fields,
 					footer: {
-						text: `Total purchase value: $${(invoice.amount_paid / 100).toFixed(2)} (incl. sales tax)`,
+						text: `Total purchase value: $${(invoice.amount_paid / 100).toFixed(
+							2
+						)} (incl. sales tax and discounts)`,
 					},
 				},
 			],
