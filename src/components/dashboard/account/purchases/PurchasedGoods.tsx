@@ -13,11 +13,16 @@ export default function PurchasedGoods({ purchase }: Props) {
 
 	useEffect(() => {
 		const itemsTotal = purchase.items.reduce((prev: number, curr) => prev + curr.price, 0);
-		const _subtotal = itemsTotal + itemsTotal * 0.0675;
-		setSubtotal(_subtotal);
+		const rawSubtotal = itemsTotal + itemsTotal * 0.0675;
+		const subtotalWithDollarDiscounts =
+			rawSubtotal -
+			(purchase.discounts.reduce((prev: number, curr) => prev + (curr.amount ? curr.decimal : 0), 0) / 100 || 0);
+		setSubtotal(rawSubtotal);
 		setTotal(
-			_subtotal -
-				_subtotal * (purchase.discounts.reduce((prev: number, curr) => prev + curr.decimal, 0) / 100 || 0)
+			subtotalWithDollarDiscounts -
+				subtotalWithDollarDiscounts *
+					(purchase.discounts.reduce((prev: number, curr) => prev + (curr.percent ? curr.decimal : 0), 0) /
+						100 || 0)
 		);
 	}, [purchase.items]);
 
@@ -87,21 +92,32 @@ export default function PurchasedGoods({ purchase }: Props) {
 						{(purchase.discounts as DiscountData[]).map((discount) =>
 							!discount.ignore ? (
 								<div className="mb-1" key={discount.id}>
-									<p className="text-sm text-neutral-700 dark:text-neutral-200">
-										{discount.name} <span className="font-bold">-{discount.percent}</span> (-$
-										{(subtotal * (discount.decimal / 100)).toFixed(2)})
-									</p>
-									<div className="text-sm text-neutral-500 dark:text-neutral-400">
-										{discount.appliesTo.map((itemId) => {
-											const prod = purchase.items.find((prod) => prod.id === itemId)!;
-											return (
-												<p key={prod.id}>
-													{prod.quantity}x {prod.name} (-$
-													{((prod.price * discount.decimal) / 100).toFixed(2)})
-												</p>
-											);
-										})}
-									</div>
+									{discount.percent ? (
+										<>
+											<p className="text-sm text-neutral-700 dark:text-neutral-200">
+												{discount.name}{" "}
+												{discount.name !== "Threshold Discount" && <>({discount.code})</>}{" "}
+												<span className="font-bold">-{discount.percent}</span> (-$
+												{(subtotal * (discount.decimal / 100)).toFixed(2)})
+											</p>
+											<div className="text-sm text-neutral-500 dark:text-neutral-400">
+												{discount.appliesTo.map((itemId) => {
+													const prod = purchase.items.find((prod) => prod.id === itemId)!;
+													return (
+														<p key={prod.id}>
+															{prod.quantity}x {prod.name} (-$
+															{((prod.price * discount.decimal) / 100).toFixed(2)})
+														</p>
+													);
+												})}
+											</div>
+										</>
+									) : (
+										<p className="text-sm text-neutral-700 dark:text-neutral-200">
+											{discount.name} ({discount.code}){" "}
+											<span className="font-bold">-{discount.amount}</span>
+										</p>
+									)}
 								</div>
 							) : (
 								<></>

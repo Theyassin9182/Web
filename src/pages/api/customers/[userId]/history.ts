@@ -9,19 +9,13 @@ import { NextIronRequest, withSession } from "src/util/session";
 import { stripeConnect } from "src/util/stripe";
 import Stripe from "stripe";
 import { PurchaseRecord } from "../../store/checkout/finalize/paypal";
-import { PaymentIntentItemResult } from "../../store/webhooks/stripe";
+import { PaymentIntentItemDiscount, PaymentIntentItemResult } from "../../store/webhooks/stripe";
 
 // TODO: Optimize this entire path, very slow, 4 second initial load
 
-export interface DiscountData {
-	id: string;
-	appliesTo: string[];
-	name: string;
-	code: string;
-	decimal: number;
-	percent: string;
+export type DiscountData = PaymentIntentItemDiscount & {
 	ignore?: boolean;
-}
+};
 
 export type AggregatedPurchaseRecordPurchases = Omit<PurchaseRecord & { gateway: "stripe" | "paypal" }, "items"> & {
 	_id: string;
