@@ -6,7 +6,7 @@ import Button from "src/components/ui/Button";
 import Link from "next/link";
 import { PaymentRequest, Stripe } from "@stripe/stripe-js";
 import { PaymentRequestButtonElement } from "@stripe/react-stripe-js";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { PayPalButton } from "react-paypal-button-v2";
 import { CartItem } from "src/pages/store";
 import { useRouter } from "next/router";
@@ -39,6 +39,7 @@ interface Props {
 	};
 	discounts: DiscountsApplied;
 	integratedWalletButtonType: "check-out" | "subscribe";
+	onEmailChange: Dispatch<SetStateAction<string>>;
 }
 
 interface DiscountsApplied {
@@ -72,6 +73,7 @@ export default function AccountInformation({
 	gift,
 	discounts,
 	integratedWalletButtonType,
+	onEmailChange,
 }: Props) {
 	const router = useRouter();
 	const { theme } = useTheme();
@@ -81,6 +83,7 @@ export default function AccountInformation({
 
 	const [receiptEmail, setReceiptEmail] = useState(userEmail);
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
+	const [paymentOption, setPaymentOption] = useState(selectedPaymentOption);
 
 	// Remade to fit new store!
 	const createPayment = () => {
@@ -264,23 +267,37 @@ export default function AccountInformation({
 		setIsGift(gift.isGift);
 	}, [gift]);
 
+	useEffect(() => {
+		onEmailChange(receiptEmail);
+	}, [receiptEmail]);
+
+	useEffect(() => {
+		setPaymentOption(selectedPaymentOption);
+	}, [selectedPaymentOption]);
+
 	return (
 		<div className="w-full">
-			<h3 className="font-montserrat text-base font-bold text-neutral-700 dark:text-white">
-				Account information
-			</h3>
+			{paymentOption !== "PayPal" && (
+				<h3 className="font-montserrat text-base font-bold text-neutral-700 dark:text-white">
+					Account information
+				</h3>
+			)}
 			<div className="mt-3">
-				<p className="text-sm text-neutral-600 dark:text-neutral-500">
-					The following email will receive the purchase receipt once the payment has been processed.
-				</p>
-				<Input
-					width="w-60"
-					type="email"
-					placeholder="support@dankmemer.gg"
-					defaultValue={receiptEmail}
-					onChange={(e: any) => setReceiptEmail(e.target.value)}
-					className="mt-2 !py-1"
-				/>
+				{paymentOption !== "PayPal" && (
+					<>
+						<p className="text-sm text-neutral-600 dark:text-neutral-500">
+							The following email will receive the purchase receipt once the payment has been processed.
+						</p>
+						<Input
+							width="w-60"
+							type="email"
+							placeholder="support@dankmemer.gg"
+							defaultValue={receiptEmail}
+							onChange={(e: any) => setReceiptEmail(e.target.value)}
+							className="mt-2 !py-1"
+						/>
+					</>
+				)}
 				<Checkbox state={acceptedTerms} callback={() => setAcceptedTerms(!acceptedTerms)}>
 					I agree to Dank Memer's{" "}
 					<Link href="/terms">

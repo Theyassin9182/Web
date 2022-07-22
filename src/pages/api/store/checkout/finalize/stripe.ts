@@ -1,6 +1,7 @@
 import { ObjectID } from "bson";
 import { ObjectId } from "mongodb";
 import { NextApiResponse } from "next";
+import { UserData } from "src/types";
 import { dbConnect } from "src/util/mongodb";
 import { redisConnect } from "src/util/redis";
 import { toTitleCase } from "src/util/string";
@@ -23,12 +24,12 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		});
 	}
 
-	const user = req.session.get("user");
+	const user = req.session.get("user") as UserData;
 	if (!user) {
 		return res.status(401).json({ error: "You are not logged in." });
 	}
 
-	const { customerName, isGift, giftFor } = req.body;
+	const { customerName, isGift, giftFor, receiptEmail } = req.body;
 
 	const db = await dbConnect();
 	const stripe = stripeConnect();
@@ -130,6 +131,9 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		Promise.all([
 			stripe.customers.update(customer.id, customerData),
 			stripe.invoices.update((invoice.payment_intent as Stripe.PaymentIntent).invoice as string, { metadata }),
+			stripe.paymentIntents.update((invoice.payment_intent as Stripe.PaymentIntent).id, {
+				receipt_email: receiptEmail ?? user.email,
+			}),
 		]);
 
 		if (subscription) {

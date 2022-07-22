@@ -105,6 +105,8 @@ export default function CheckoutForm({
 	const [appliedSavings, setAppliedSavings] = useState(0);
 	const [appliedDiscount, setAppliedDiscount] = useState(false);
 
+	const [receiptEmail, setReceiptEmail] = useState(userEmail);
+
 	const [canCheckout, setCanCheckout] = useState(false);
 
 	useEffect(() => {
@@ -278,6 +280,7 @@ export default function CheckoutForm({
 			url: `/api/store/checkout/finalize/stripe?invoice=${invoiceId}`,
 			data: {
 				customerName: nameOnCard,
+				receiptEmail,
 				isGift,
 				giftFor,
 			},
@@ -527,7 +530,8 @@ export default function CheckoutForm({
 						acceptsIntegratedWallet={acceptsIntegratedWallet}
 						integratedWallet={integratedWallet}
 						selectedPaymentOption={selectedPaymentOption}
-						userEmail={userEmail}
+						userEmail={receiptEmail}
+						onEmailChange={setReceiptEmail}
 						processingPayment={processingPayment}
 						confirmPayment={confirmPayment}
 						completedPayment={completedPayment}
