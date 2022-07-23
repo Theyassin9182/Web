@@ -22,6 +22,7 @@ import BannedUser from "src/components/store/BannedUser";
 import Dialog from "src/components/Dialog";
 import AgeVerification from "src/components/store/modals/AgeVerification";
 import { STORE_BLOCKED_COUNTRIES, STORE_CUSTOM_MIN_AGE, STORE_NO_MIN_AGE } from "src/constants";
+import { useCart } from "src/util/stores/cart";
 
 interface PossibleMetadata {
 	type: ProductType;
@@ -73,6 +74,8 @@ interface Props extends PageProps {
 }
 
 export default function StoreHome({ user, banned, country, verification }: Props) {
+	const cart = useCart();
+
 	const [userCountry, setUserCountry] = useState(country);
 	const [modalProductId, setModalProductId] = useState("");
 	const [openModal, setOpenModal] = useState(false);
@@ -191,14 +194,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 			});
 		}
 
-		const alreadyExists = cartItems.findIndex((_item) => _item.id === item.id);
-		if (alreadyExists !== -1 && cartItems[alreadyExists].quantity < 100) {
-			let _cartItems = cartItems.slice();
-			_cartItems[alreadyExists].quantity += 1;
-			setCartItems(_cartItems);
-		} else if (alreadyExists === -1) {
-			setCartItems((_items) => [..._items, item]);
-		}
+		cart.addItem(item);
 		setProcessingCartChange(false);
 	};
 
@@ -298,17 +294,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 					</Dialog>
 					<div className="mt-12 flex flex-col items-center justify-between space-y-2 sm:flex-row sm:space-y-0">
 						<Title size="big">Store</Title>
-						<ShoppingCart
-							totalCost={totalCost}
-							cart={cartItems}
-							setCart={setCartItems}
-							hovered={setCartButtonHovered}
-							label={
-								cartQuantities >= 1
-									? `${cartQuantities} item${cartQuantities === 1 ? "" : "s"} for $${totalCost}`
-									: "Shopping cart"
-							}
-						/>
+						<ShoppingCart hovered={setCartButtonHovered} />
 					</div>
 					{bannerPages.length >= 1 && (
 						<div className={clsx(cartButtonHovered && "-z-10", "sticky mt-3 h-72 w-full max-w-7xl")}>
