@@ -154,7 +154,7 @@ export default function CheckoutForm({
 
 	useEffect(() => {
 		setupIntegratedWallet();
-	}, [stripe]);
+	}, [stripe, totalCost]);
 
 	useEffect(() => {
 		const numSubCost = parseFloat(subtotalCost);
@@ -193,20 +193,18 @@ export default function CheckoutForm({
 	};
 
 	const setupIntegratedWallet = async () => {
-		if (!stripe) return;
-		const paymentRequest = stripe.paymentRequest({
+		if (!stripe || totalCost === "0.00" || totalCost === "NaN") return;
+		const paymentRequest = stripe!.paymentRequest({
 			country: "US",
 			currency: "usd",
 			total: {
 				label: `Dank Memer store purchase`,
 				amount: Math.floor(parseFloat(totalCost) * 100),
 			},
-			displayItems: cart.map((item) => {
-				return {
-					label: `${item.quantity}x ${item.name}`,
-					amount: item.quantity * getSelectedPriceValue(item, item.selectedPrice).value,
-				};
-			}),
+			displayItems: cart.map((item) => ({
+				label: `${item.quantity}x ${item.name}`,
+				amount: item.quantity * getSelectedPriceValue(item, item.selectedPrice).value,
+			})),
 			requestPayerName: true,
 		});
 
