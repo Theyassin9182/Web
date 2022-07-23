@@ -25,7 +25,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		return res.status(401).json({ error: "You are not logged in." });
 	}
 
-	const code = req.query.code.toString();
+	const code = req.query.code?.toString();
 	if (!code) {
 		return res.status(401).json({ error: "No discount code was provided." });
 	}

@@ -44,7 +44,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		});
 	}
 
-	const orderID = req.query.orderID.toString();
+	const orderID = req.query.orderID?.toString();
 	if (!orderID) {
 		return res.status(400).json({
 			error: "No orderID was provided to finalize this purchase.",

@@ -14,6 +14,10 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		return res.status(403).json({ message: "You are unauthorized." });
 	}
 
+	if (!req.query.id) {
+		return res.status(400).json({ message: "No invoice ID was provided." });
+	}
+
 	const stripe = stripeConnect();
 	const invoice = await stripe.invoices.retrieve(req.query.id.toString());
 	const paymentIntent = await stripe.paymentIntents.retrieve(invoice.payment_intent as string);

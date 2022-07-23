@@ -17,7 +17,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		});
 	}
 
-	const invoiceId = req.query.invoice.toString();
+	const invoiceId = req.query.invoice?.toString();
 	if (!invoiceId) {
 		return res.status(400).json({
 			error: "No invoice id was provided to finalize this purchase.",

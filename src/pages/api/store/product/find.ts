@@ -19,7 +19,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	if (req.query.action) {
 		switch (req.query.action) {
 			case "format":
-				const desiredFormat = req.query.to.toString();
+				const desiredFormat = req.query.to?.toString();
 				if (!desiredFormat) {
 					return res.status(400).json({
 						message: "The new (to) format is required to output this object correctly.",

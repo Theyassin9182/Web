@@ -59,7 +59,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	const redis = await redisConnect();
 
 	const stripe = stripeConnect();
-	const productId: string = req.query?.id.toString();
+	const productId = req.query.id?.toString();
 	if (!productId) {
 		return res.status(400).json({ error: "No product id given." });
 	}
