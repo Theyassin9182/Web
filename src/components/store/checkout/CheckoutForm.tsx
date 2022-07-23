@@ -311,7 +311,7 @@ export default function CheckoutForm({
 						/>
 						{integratedWalletType === "apple" && (
 							<PaymentOption
-								icons={[<ApplyPaySvg />]}
+								icons={[<Image src="/img/store/apple-pay.svg" width={26} height={20} />]}
 								selected={selectedPaymentOption === "ApplePay"}
 								select={() => setSelectedPaymentOption("ApplePay")}
 							/>
