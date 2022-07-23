@@ -16,6 +16,7 @@ import PaymentOption from "./PaymentOption";
 import router from "next/router";
 import Checkbox from "src/components/ui/Checkbox";
 import ApplyPaySvg from "public/img/store/apple-pay.svg";
+import GooglePaySvg from "public/img/store/google-pay.svg";
 import PaymentMethods from "./PaymentMethods";
 import AccountInformation from "./AccountInformation";
 import Tooltip from "src/components/ui/Tooltip";
@@ -209,6 +210,7 @@ export default function CheckoutForm({
 		});
 
 		const canMakePayment: CanMakePaymentResult | null = await paymentRequest.canMakePayment();
+		console.log(canMakePayment);
 
 		if (!canMakePayment) return;
 		setAcceptsIntegratedWallet(true);
@@ -314,6 +316,13 @@ export default function CheckoutForm({
 								icons={[<Image src="/img/store/apple-pay.svg" width={26} height={20} />]}
 								selected={selectedPaymentOption === "ApplePay"}
 								select={() => setSelectedPaymentOption("ApplePay")}
+							/>
+						)}
+						{integratedWalletType === "google" && (
+							<PaymentOption
+								icons={[<Image src="/img/store/google-pay.svg" width={26} height={20} />]}
+								selected={selectedPaymentOption === "GooglePay"}
+								select={() => setSelectedPaymentOption("GooglePay")}
 							/>
 						)}
 					</div>

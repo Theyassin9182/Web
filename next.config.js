@@ -17,7 +17,7 @@ module.exports = {
 					},
 					{
 						key: "Permissions-Policy",
-						value: "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()",
+						value: "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(*), usb=(), interest-cohort=()",
 					},
 					{
 						key: "X-Content-Type-Options",
