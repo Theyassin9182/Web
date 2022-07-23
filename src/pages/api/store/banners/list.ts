@@ -1,4 +1,4 @@
-import { NextApiResponse } from "next-auth/internals/utils";
+import { NextApiResponse } from "next";
 import { BannerPage } from "src/components/store/PagedBanner";
 import { UserData } from "src/types";
 import { dbConnect } from "src/util/mongodb";

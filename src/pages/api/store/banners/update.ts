@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { NextApiResponse } from "next-auth/internals/utils";
+import { NextApiResponse } from "next";
 import { dbConnect } from "src/util/mongodb";
 import { NextIronRequest, withSession } from "src/util/session";
 
