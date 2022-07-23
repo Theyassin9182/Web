@@ -43,6 +43,7 @@
 		"react-paypal-button-v2": "^2.6.3",
 		"react-toastify": "^8.0.3",
 		"simplebar-react": "^2.4.1",
+		"socket.io-client": "^4.5.1",
 		"stripe": "^9.2.0"
 	},
 	"devDependencies": {
