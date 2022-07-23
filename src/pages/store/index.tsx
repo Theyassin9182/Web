@@ -325,8 +325,8 @@ export default function StoreHome({ user, banned, country, verification }: Props
 									<div className="mt-3 flex min-w-[1280px] justify-between space-x-10 xl:min-w-[unset]">
 										{Array(3)
 											.fill(0)
-											.map(() => (
-												<LoadingProduct variant="popular" />
+											.map((_, i) => (
+												<LoadingProduct key={i} variant="popular" />
 											))}
 									</div>
 								</div>
@@ -345,8 +345,8 @@ export default function StoreHome({ user, banned, country, verification }: Props
 								>
 									{Array(5)
 										.fill(0)
-										.map(() => (
-											<LoadingProduct variant="normal" />
+										.map((_, i) => (
+											<LoadingProduct key={i} variant="normal" />
 										))}
 								</div>
 							</section>
@@ -362,8 +362,8 @@ export default function StoreHome({ user, banned, country, verification }: Props
 								>
 									{Array(5)
 										.fill(0)
-										.map(() => (
-											<LoadingProduct variant="normal" />
+										.map((_, i) => (
+											<LoadingProduct key={i} variant="normal" />
 										))}
 								</div>
 							</section>

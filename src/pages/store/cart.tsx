@@ -390,6 +390,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 									<div className="mt-2">
 										{cart.map((item, i) => (
 											<CartItem
+												key={item.id}
 												size="large"
 												index={i}
 												{...item}
@@ -406,7 +407,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 									<Title size="small">Other users have also bought</Title>
 									<div className="mt-2">
 										{upsells.map((upsell) => (
-											<OtherProduct {...upsell} addToCart={addUpsellProduct} />
+											<OtherProduct key={upsell.id} {...upsell} addToCart={addUpsellProduct} />
 										))}
 									</div>
 								</div>
@@ -418,6 +419,7 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 									<div className="mt-2">
 										{cart.map((item, i) => (
 											<CartItem
+												key={item.id}
 												size="large"
 												index={i}
 												{...item}
@@ -614,7 +616,10 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 																			(_item) => _item.id === item.id
 																		)[0];
 																		return (
-																			<li className="flex list-decimal justify-between text-sm">
+																			<li
+																				key={item.id}
+																				className="flex list-decimal justify-between text-sm"
+																			>
 																				<p className="dark:text-neutral-400">
 																					• {cartItem.quantity}x{" "}
 																					{cartItem.name}

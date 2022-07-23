@@ -197,6 +197,7 @@ export default function PagedBanner({
 								.fill(0)
 								.map((_, i) => (
 									<div
+										key={i}
 										role={"progressbar"}
 										className="h-1 w-8 cursor-pointer overflow-hidden rounded-full bg-white/40"
 										onClick={() => {

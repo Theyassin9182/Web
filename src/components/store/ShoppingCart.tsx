@@ -73,6 +73,7 @@ export default function ShoppingCart({ totalCost, cart, hovered, setCart, label 
 								<div>
 									{cart.map((item, i) => (
 										<CartItem
+											key={item.id}
 											size="small"
 											index={i}
 											{...item}

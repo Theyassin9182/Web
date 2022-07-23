@@ -146,6 +146,7 @@ export default function Success({ paymentGateway, invoice, user }: Props) {
 											<SimpleBar className="flex max-h-72 flex-col" autoHide={false}>
 												{invoice.items.map((item) => (
 													<CartItemImmutable
+														key={item.id}
 														{...item}
 														gifted={JSON.parse(invoice.metadata.isGift)}
 													/>
