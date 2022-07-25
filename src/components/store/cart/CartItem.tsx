@@ -3,7 +3,6 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import Dropdown from "src/components/ui/Dropdown";
 import { CartItem as CartItems } from "src/pages/store";
-
 import { toTitleCase } from "src/util/string";
 import Stripe from "stripe";
 

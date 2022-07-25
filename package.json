@@ -45,7 +45,7 @@
 		"simplebar-react": "^2.4.1",
 		"socket.io-client": "^4.5.1",
 		"stripe": "^9.2.0",
-		"zustand": "^4.0.0-rc.4"
+		"swr": "^1.3.0"
 	},
 	"devDependencies": {
 		"@tailwindcss/line-clamp": "^0.3.0",

@@ -1,11 +1,12 @@
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { CartItem as CartItems } from "src/pages/store";
 import { Title } from "../Title";
 import Button from "../ui/Button";
-import CartItem from "./cart/CartItem";
 import { Icon as Iconify } from "@iconify/react";
-import { useCart } from "src/util/stores/cart";
+import { useCart } from "src/util/hooks/useCart";
+import { getSelectedPriceValue } from "src/util/store";
+import { CartItem as ICartItem } from "src/pages/store";
+import CartItem from "./cart/CartItem";
 
 interface Props {
 	hovered: Dispatch<SetStateAction<boolean>>;
@@ -13,13 +14,43 @@ interface Props {
 
 export default function ShoppingCart({ hovered }: Props) {
 	const router = useRouter();
-	const cart = useCart();
-	const itemCount = useCart((state) => state.items.length);
-	const total = useCart((state) => state.total);
+	const { cart, error, isLoading, mutation } = useCart();
+	const itemCount = cart.reduce((prev, curr) => prev + curr.quantity, 0);
+	const total =
+		cart.length >= 1
+			? cart
+					.reduce(
+						(acc: number, item: ICartItem) =>
+							acc + (getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity,
+						0
+					)
+					.toFixed(2)
+			: "0.00";
 
 	const [showCart, setShowCart] = useState(false);
 	// Thanks badosz
 	let timeoutEnter: NodeJS.Timeout;
+
+	const deleteItem = (index: number) => {
+		const oldCart = cart;
+		oldCart.splice(index, 1);
+		mutation.mutate(oldCart);
+		if (oldCart.length < 1) setShowCart(false);
+	};
+
+	const updateQuantity = (index: number, quantity: number) => {
+		const oldCart = cart;
+		oldCart[index].quantity = quantity;
+		mutation.mutate(oldCart);
+	};
+
+	const changeInterval = (index: number, interval: "month" | "year") => {
+		const oldCart = cart;
+		oldCart[index].selectedPrice = oldCart[index].prices.filter(
+			(price) => price.interval?.period === interval
+		)[0].id;
+		mutation.mutate(oldCart);
+	};
 
 	const buttonEnter = () => {
 		timeoutEnter = setTimeout(() => {
@@ -44,28 +75,40 @@ export default function ShoppingCart({ hovered }: Props) {
 				<div className="flex items-center space-x-2 py-1">
 					<Iconify icon="akar-icons:cart" className="text-black dark:text-white" height={20} />
 					<p>
-						{itemCount >= 1
-							? `${cart.items.length} item${cart.items.length === 1 ? "" : "s"} for $${total}`
+						{isLoading || itemCount >= 1
+							? `${itemCount} item${itemCount === 1 ? "" : "s"} for $${total}`
 							: "Shopping cart"}
 					</p>
 				</div>
 			</Button>
 			{showCart &&
-				(cart.items.length >= 1 ? (
+				(error ? (
+					<div className="absolute right-0 z-50 pt-2">
+						<div className="w-96 rounded-md bg-neutral-200 py-2 px-3 dark:bg-dank-600">
+							<h4 className="text-lg font-bold">Your cart</h4>
+							<div className="my-6 flex flex-col">
+								<p className="mx-auto w-3/4 text-center opacity-50">
+									Failed to load your cart contents. If this does not resolve itself please reload the
+									page or try again later.
+								</p>
+							</div>
+						</div>
+					</div>
+				) : cart.length >= 1 ? (
 					<div className="absolute right-0 z-10 w-screen max-w-md pt-2 motion-safe:animate-slide-in">
 						<div className="w-full rounded-md bg-neutral-200 py-3 px-4 dark:bg-dank-600">
 							<Title size="small">Your cart</Title>
 							<div className="flex flex-col">
 								<div>
-									{cart.items.map((item, i) => (
+									{cart.map((item, i) => (
 										<CartItem
 											key={item.id}
 											size="small"
 											index={i}
 											{...item}
-											changeInterval={cart.changeInterval}
-											updateQuantity={cart.setItemQuantity}
-											deleteItem={cart.removeItem(item.id)}
+											changeInterval={changeInterval}
+											updateQuantity={updateQuantity}
+											deleteItem={deleteItem}
 											disabled={false}
 										/>
 									))}

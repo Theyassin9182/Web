@@ -4,7 +4,7 @@ import { Title } from "src/components/Title";
 import Container from "src/components/ui/Container";
 import { PageProps, User, UserAge, UserData } from "src/types";
 import clsx from "clsx";
-import { GetServerSideProps, GetServerSidePropsContext } from "next";
+import { GetServerSideProps, GetServerSidePropsContext, GetStaticProps } from "next";
 import { withSession } from "src/util/session";
 import Modal from "src/components/store/Modal";
 import ShoppingCart from "src/components/store/ShoppingCart";
@@ -22,7 +22,7 @@ import BannedUser from "src/components/store/BannedUser";
 import Dialog from "src/components/Dialog";
 import AgeVerification from "src/components/store/modals/AgeVerification";
 import { STORE_BLOCKED_COUNTRIES, STORE_CUSTOM_MIN_AGE, STORE_NO_MIN_AGE } from "src/constants";
-import { useCart } from "src/util/stores/cart";
+import { useCart } from "src/util/hooks/useCart";
 
 interface PossibleMetadata {
 	type: ProductType;
@@ -71,10 +71,11 @@ interface Props extends PageProps {
 	banned: boolean;
 	country: keyof typeof STORE_CUSTOM_MIN_AGE | (string & {});
 	verification: Omit<UserAge, "verifiedOn">;
+	cart: CartItem[];
 }
 
 export default function StoreHome({ user, banned, country, verification }: Props) {
-	const cart = useCart();
+	const { cart, error, isLoading, mutation } = useCart();
 
 	const [userCountry, setUserCountry] = useState(country);
 	const [modalProductId, setModalProductId] = useState("");
@@ -145,28 +146,28 @@ export default function StoreHome({ user, banned, country, verification }: Props
 		}
 	};
 
-	const getCartContents = async () => {
-		let { data: cartContents } = await axios("/api/store/cart/get");
-		if (!cartContents.cart) return;
-		setCartItems(cartContents.cart);
-		if (cartContents.cart.length < 1) return;
-		setTotalCost(
-			cartContents.cart
-				.reduce(
-					(acc: number, item: CartItem) =>
-						acc + (getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity,
-					0
-				)
-				.toFixed(2)
-		);
-		setCartQuantities(cartContents.cart.reduce((acc: number, item: CartItem) => acc + item.quantity, 0));
-	};
+	// const getCartContents = async () => {
+	// 	let { data: cartContents } = await axios("/api/store/cart/get");
+	// 	if (!cartContents.cart) return;
+	// 	setCartItems(cartContents.cart);
+	// 	if (cartContents.cart.length < 1) return;
+	// 	setTotalCost(
+	// 		cartContents.cart
+	// 			.reduce(
+	// 				(acc: number, item: CartItem) =>
+	// 					acc + (getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity,
+	// 				0
+	// 			)
+	// 			.toFixed(2)
+	// 	);
+	// 	setCartQuantities(cartContents.cart.reduce((acc: number, item: CartItem) => acc + item.quantity, 0));
+	// };
 
 	const addToCart = async (item: CartItem) => {
 		let toastMessage: string | undefined;
 		const typeToAdd = item.type;
-		const cartHasSubscription = cartItems.filter((i) => i.type === "subscription").length >= 1;
-		const cartHasSingle = cartItems.filter((i) => i.type === "single").length >= 1;
+		const cartHasSubscription = cart.filter((i) => i.type === "subscription").length >= 1;
+		const cartHasSingle = cart.filter((i) => i.type === "single").length >= 1;
 
 		if (
 			typeToAdd === "single" &&
@@ -194,7 +195,14 @@ export default function StoreHome({ user, banned, country, verification }: Props
 			});
 		}
 
-		cart.addItem(item);
+		const alreadyExists = cart.findIndex((_item) => _item.id === item.id);
+		const oldCart = cart.slice();
+		if (alreadyExists !== -1 && cart[alreadyExists].quantity < 100) {
+			oldCart[alreadyExists].quantity += 1;
+		} else if (alreadyExists === -1) {
+			oldCart.push(item);
+		}
+		mutation.mutate(oldCart);
 		setProcessingCartChange(false);
 	};
 
@@ -220,7 +228,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 		if (!banned) {
 			getBanners();
 			getAllProducts();
-			getCartContents();
+			// getCartContents();
 		}
 	}, []);
 
@@ -248,14 +256,14 @@ export default function StoreHome({ user, banned, country, verification }: Props
 		axios({
 			url: "/api/store/cart/set",
 			method: "PUT",
-			data: { cartData: cartItems },
+			data: { cartData: cart },
 		});
-		if (cartItems.length < 1) {
+		if (cart.length < 1) {
 			setTotalCost("0.00");
 			setCartQuantities(0);
 		} else {
 			setTotalCost(
-				cartItems
+				cart
 					.map(
 						(item: CartItem) =>
 							(getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity
@@ -263,9 +271,9 @@ export default function StoreHome({ user, banned, country, verification }: Props
 					.reduce((a: number, b: number) => a + b)
 					.toFixed(2)
 			);
-			setCartQuantities(cartItems.map((item: CartItem) => item.quantity).reduce((a: number, b: number) => a + b));
+			setCartQuantities(cart.map((item: CartItem) => item.quantity).reduce((a: number, b: number) => a + b));
 		}
-	}, [cartItems]);
+	}, [cart]);
 
 	useEffect(() => {
 		if (!openModal) {
@@ -458,6 +466,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
 				user,
 				banned: await db.collection("bans").findOne({ id: user.id, type: "lootbox" }),
 				country,
+				cart: (await ctx.req.session.get("cart")) ?? [],
 				verification: {
 					verified: dbUser.ageVerification?.verified ?? false,
 					years: dbUser.ageVerification?.years ?? 0,
