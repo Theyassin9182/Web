@@ -1,71 +1,83 @@
 import { CartItem } from "src/pages/store";
+import mutations from "./mutations";
 
 let cachedController: CartController;
-const Omit = <T, K extends keyof T>(Class: new () => T, keys: K[]): new () => Omit<T, typeof keys[number]> => Class;
-export type CartMap = Map<string, Omit<CartItem, "id">>;
+export type CartMap = Map<string, CartItem>;
 
-export function accessCart(cart: CartMap | string = new Map<string, Omit<CartItem, "id">>()) {
-    if(cachedController) return cachedController;
-    const controller = new CartController(cart);
-    cachedController = controller;
-    return controller;
+export function accessCart(cart: CartMap | string = new Map<string, CartItem>()) {
+	if (cachedController) return cachedController;
+	const controller = new CartController(cart);
+	cachedController = controller;
+	return controller;
 }
 
-export default class CartController extends Omit(Map<string, Omit<CartItem, "id">>, ["set", "get", "has"]) {
-	items: CartMap;
+export default class CartController {
+	private items: CartMap;
+	public mutations: typeof mutations;
 
 	constructor(cart: CartMap | string = new Map()) {
-		super();
-		this.items = typeof cart === "string" ? new Map(Object.entries(JSON.parse(cart))) : new Map(Object.entries(cart));
+		this.mutations = mutations;
+		this.items =
+			cart instanceof Map
+				? cart
+				: typeof cart === "string"
+				? new Map(Object.entries(JSON.parse(cart)))
+				: new Map(Object.entries(cart));
 	}
 
-    private set() {}
+	list(format = true) {
+		if (format) return Object.fromEntries(this.items);
+		return this.items;
+	}
 
-    list() {
-		return Object.fromEntries(this.items);
-    }
-
-	get(key: string = "") {
+	get(key: string = "", stringify = true) {
 		if (key.length >= 1) {
 			const item = this.items.get(key);
-			return JSON.stringify(item);
+			if (stringify) {
+				return JSON.stringify(item);
+			} else {
+				return item;
+			}
 		}
 	}
 
-    has(key: string) {
-        return this.items.has(key);
-    }
+	has(key: string) {
+		return this.items.has(key);
+	}
 
-    iterable() {
-        return Array.from(this.items.values())
-    }
+	iterable() {
+		return Array.from(this.items.values());
+	}
 
-    private canAdd(id: string, value: Omit<CartItem, "id">): boolean {
-        const typeToAdd = value.type;
-        const hasSubscription = this.iterable().filter((i) => i.type === "subscription").length >= 1;
-        const hasSingle = this.iterable().filter(i => i.type === "single").length >= 1;
+	private canAdd(id: string, value: CartItem): boolean {
+		const typeToAdd = value.type;
+		const hasSubscription = this.iterable().filter((i) => i.type === "subscription").length >= 1;
+		const hasSingle = this.iterable().filter((i) => i.type === "single").length >= 1;
 
-        if(this.has(id)) {
-            return false;
-        }
+		if (this.has(id)) {
+			return false;
+		}
 
-        if(
-            (typeToAdd === "subscription" && (hasSubscription || hasSingle)) ||
-            (typeToAdd === "single" && hasSubscription)) {
-            return false;
-        }
+		if (
+			(typeToAdd === "subscription" && (hasSubscription || hasSingle)) ||
+			(typeToAdd === "single" && hasSubscription)
+		) {
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-	addItem(id: string, value: Omit<CartItem, "id">): Promise<typeof this> {
-        return new Promise((resolve, reject) => {
-            if(this.canAdd(id, value)) {
-                this.items.set(id, value);
-                return resolve(this);
-            } 
-            return reject("That item could not be added. Keep in mind that, subscriptions and single-purchase products cannot be mixed.") 
-        })
+	addItem(id: string, product: CartItem): Promise<typeof this> {
+		return new Promise((resolve, reject) => {
+			if (this.canAdd(id, product)) {
+				this.items.set(id, product);
+				return resolve(this);
+			}
+			return reject(
+				"That item could not be added. Keep in mind that, subscriptions and single-purchase products cannot be mixed."
+			);
+		});
 	}
 
 	delItem(id: string) {
@@ -73,11 +85,11 @@ export default class CartController extends Omit(Map<string, Omit<CartItem, "id"
 		return this;
 	}
 
-    /**
-     * @description Overrides the current cart context with the provided cart
-     * @param cart New cart context
-     * @returns this
-     */
+	/**
+	 * @description Overrides the current cart context with the provided cart
+	 * @param cart New cart context
+	 * @returns this
+	 */
 	overrideWith(cart: CartMap) {
 		this.items = cart;
 		return this;
@@ -88,7 +100,6 @@ export default class CartController extends Omit(Map<string, Omit<CartItem, "id"
 			const current = this.items.get(id)!;
 			this.items.set(id, { ...current, quantity: current.quantity + qty });
 		}
-
 	}
 
 	decreaseQuantity(id: string, qty: number = 1) {

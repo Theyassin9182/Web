@@ -76,7 +76,9 @@ export default function Product({ product, canAdd, add, openModal }: Props) {
 					</p>
 				</div>
 				<div className="flex flex-col text-right">
-					<h6 className="font-bold text-dank-300">${(product.prices[0].value / 100).toFixed(2)}</h6>
+					<h6 className="font-bold text-dank-300">
+						${([...product.prices.values()][0].value / 100).toFixed(2)}
+					</h6>
 					<p className="-mt-1.5 text-sm text-neutral-500  dark:text-neutral-400">
 						{product.type === "subscription" ? "per month" : "each"}
 					</p>

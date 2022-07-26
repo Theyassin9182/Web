@@ -1,11 +1,11 @@
-import useSWR, { Fetcher, KeyedMutator } from "swr";
+import useSWR, { KeyedMutator } from "swr";
 import axios, { AxiosError } from "axios";
 import { CartItem } from "src/pages/store";
 import CartController, { accessCart, CartMap } from "../cart";
 
-export const fetcher: Fetcher<CartMap> = (url: string) =>
+export const fetcher = (url: string) =>
 	axios(url)
-		.then((res) => res.data.cart)
+		.then((res) => res.data)
 		.catch((e) => {
 			let error = e as AxiosError;
 			const res = new Error("Something went wrong while trying to fetch data.") as Error & {
@@ -16,14 +16,16 @@ export const fetcher: Fetcher<CartMap> = (url: string) =>
 			res.status = error.response?.status;
 		});
 interface useCartImpl {
-	cart: Omit<CartItem, "id">[];
+	cart: CartItem[];
 	error: any;
 	mutate: KeyedMutator<CartMap>;
 	controller: CartController;
+	isValidating?: boolean;
+	isLoading?: boolean;
 }
 
 export const useCart = (): useCartImpl => {
-	const { data, error, mutate } = useSWR("/api/store/cart/get", fetcher, {
+	const { data, error, mutate, isValidating } = useSWR<CartMap>("/api/store/cart/get", fetcher, {
 		revalidateOnFocus: true,
 	});
 
@@ -33,10 +35,15 @@ export const useCart = (): useCartImpl => {
 	)
 		console.error(error);
 
+	const controller = new CartController(data);
+	const cart = controller.iterable();
+
 	return {
-		controller: accessCart(data),
-		cart: accessCart(data).iterable(),
+		controller,
+		cart,
 		error,
 		mutate,
+		isValidating,
+		isLoading: !(!error && !data),
 	};
 };

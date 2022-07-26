@@ -23,6 +23,8 @@ import Dialog from "src/components/Dialog";
 import AgeVerification from "src/components/store/modals/AgeVerification";
 import { STORE_BLOCKED_COUNTRIES, STORE_CUSTOM_MIN_AGE, STORE_NO_MIN_AGE } from "src/constants";
 import { useCart } from "src/util/hooks/useCart";
+import { CartMap } from "src/util/cart";
+import { useHasMap } from "src/util/hooks/useHasMap";
 
 interface PossibleMetadata {
 	type: ProductType;
@@ -51,6 +53,11 @@ export type CartItem = {
 };
 
 export type ListedProduct = Omit<ProductDetails, "body"> & { hidden: boolean; created: number };
+export type ListedProductRaw<T extends unknown> = Omit<ListedProduct, "prices"> & {
+	prices: {
+		[k: string]: T;
+	};
+};
 
 export type ModalProps = {
 	product: ListedProduct;
@@ -71,11 +78,20 @@ interface Props extends PageProps {
 	banned: boolean;
 	country: keyof typeof STORE_CUSTOM_MIN_AGE | (string & {});
 	verification: Omit<UserAge, "verifiedOn">;
-	cart: CartItem[];
 }
 
 export default function StoreHome({ user, banned, country, verification }: Props) {
-	const { cart, error, isLoading, mutation } = useCart();
+	const { cart, error: cartError, mutate, controller } = useCart();
+	const {
+		data: subscriptions,
+		error: subsError,
+		isValidating: areSubsValidating,
+	} = useHasMap<ListedProduct[]>("/api/store/products/subscriptions/list", "prices", {}, true);
+	const {
+		data: products,
+		error: productsError,
+		isValidating: areProductsValidating,
+	} = useHasMap<ListedProduct[]>("/api/store/products/one-time/list", "prices", {}, true);
 
 	const [userCountry, setUserCountry] = useState(country);
 	const [modalProductId, setModalProductId] = useState("");
@@ -91,8 +107,8 @@ export default function StoreHome({ user, banned, country, verification }: Props
 
 	const [loadingProducts, setLoadingProducts] = useState(true);
 	const [popularProducts, setPopularProducts] = useState<UpsellProduct[]>([]);
-	const [subscriptions, setSubscriptions] = useState<ListedProduct[]>([]);
-	const [products, setProducts] = useState<ListedProduct[]>([]);
+	// const [subscriptions, setSubscriptions] = useState<ListedProduct[]>([]);
+	// const [products, setProducts] = useState<ListedProduct[]>([]);
 
 	const [bannerPages, setBannerPages] = useState<BannerPage[]>([]);
 
@@ -121,14 +137,14 @@ export default function StoreHome({ user, banned, country, verification }: Props
 			axios
 				.all([
 					ProductsAPI.get("/popular"),
-					ProductsAPI.get("/one-time/list"),
-					ProductsAPI.get("/subscriptions/list"),
+					// ProductsAPI.get("/one-time/list"),
+					// ProductsAPI.get("/subscriptions/list"),
 				])
 				.then(
-					axios.spread(async ({ data: popularProds }, { data: singles }, { data: subscriptions }) => {
+					axios.spread(async ({ data: popularProds }, { data: singles } /*,{ data: subscriptions }*/) => {
 						setPopularProducts(popularProds);
-						setProducts(singles);
-						setSubscriptions(subscriptions);
+						// setProducts(singles);
+						// setSubscriptions(subscriptions);
 					})
 				)
 				.catch((e) => {
@@ -146,80 +162,41 @@ export default function StoreHome({ user, banned, country, verification }: Props
 		}
 	};
 
-	// const getCartContents = async () => {
-	// 	let { data: cartContents } = await axios("/api/store/cart/get");
-	// 	if (!cartContents.cart) return;
-	// 	setCartItems(cartContents.cart);
-	// 	if (cartContents.cart.length < 1) return;
-	// 	setTotalCost(
-	// 		cartContents.cart
-	// 			.reduce(
-	// 				(acc: number, item: CartItem) =>
-	// 					acc + (getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity,
-	// 				0
-	// 			)
-	// 			.toFixed(2)
-	// 	);
-	// 	setCartQuantities(cartContents.cart.reduce((acc: number, item: CartItem) => acc + item.quantity, 0));
-	// };
-
-	const addToCart = async (item: CartItem) => {
-		let toastMessage: string | undefined;
-		const typeToAdd = item.type;
-		const cartHasSubscription = cart.filter((i) => i.type === "subscription").length >= 1;
-		const cartHasSingle = cart.filter((i) => i.type === "single").length >= 1;
-
-		if (
-			typeToAdd === "single" &&
-			products.find((product) => product.id === item.id)?.category === "lootbox" &&
-			!verification.verified &&
-			!requiresAgeVerification
-		) {
-			setOpenDialog(true);
-		}
-
-		if (typeToAdd === "subscription" && cartHasSubscription) {
-			toastMessage = "Only one subscription should be added your cart at a time.";
-		} else if (typeToAdd === "subscription" && cartHasSingle) {
-			toastMessage = "You cannot combine subscription and single-purchase products.";
-		} else if (typeToAdd == "single" && cartHasSubscription) {
-			toastMessage = "You cannot combine subscription and single-purchase products.";
-		}
-
-		if (toastMessage) {
-			return toast.info(toastMessage, {
-				position: "top-center",
-				theme: "colored",
-				hideProgressBar: true,
-				autoClose: 3000,
-			});
-		}
-
-		const alreadyExists = cart.findIndex((_item) => _item.id === item.id);
-		const oldCart = cart.slice();
-		if (alreadyExists !== -1 && cart[alreadyExists].quantity < 100) {
-			oldCart[alreadyExists].quantity += 1;
-		} else if (alreadyExists === -1) {
-			oldCart.push(item);
-		}
-		mutation.mutate(oldCart);
-		setProcessingCartChange(false);
-	};
-
 	const addProductById = async (id: string) => {
 		if (!processingCartChange) {
 			try {
 				setProcessingCartChange(true);
-				const { data: formatted }: { data: CartItem } = await axios(
+				const { data: product }: { data: CartItem } = await axios(
 					`/api/store/product/find?id=${id}&action=format&to=cart-item`
 				);
-				if (requiresAgeVerification && formatted.category?.toLowerCase() === "lootbox") {
+				if (requiresAgeVerification && product.category?.toLowerCase() === "lootbox") {
 					return setOpenDialog(true);
 				}
-				addToCart(formatted);
+				const expectedOutput = controller.addItem(product.id, product);
+				await mutate(
+					async () => {
+						try {
+							let { data } = await axios({
+								url: `/api/store/cart/add?id=${product.id}`,
+								method: "PUT",
+								data: product,
+							});
+
+							return data.cart;
+						} catch {}
+					},
+					{
+						optimisticData: (await expectedOutput).list(false) as CartMap,
+						rollbackOnError: true,
+						populateCache: true,
+						revalidate: false,
+					}
+				);
 			} catch (e) {
 				console.error(e);
 				toast.error("We were unable to update your cart information. Please try again later.");
+			} finally {
+				setProcessingCartChange(false);
 			}
 		}
 	};
@@ -228,7 +205,6 @@ export default function StoreHome({ user, banned, country, verification }: Props
 		if (!banned) {
 			getBanners();
 			getAllProducts();
-			// getCartContents();
 		}
 	}, []);
 
@@ -251,29 +227,29 @@ export default function StoreHome({ user, banned, country, verification }: Props
 		}
 	}, [country]);
 
-	useEffect(() => {
-		if (products.length < 1) return;
-		axios({
-			url: "/api/store/cart/set",
-			method: "PUT",
-			data: { cartData: cart },
-		});
-		if (cart.length < 1) {
-			setTotalCost("0.00");
-			setCartQuantities(0);
-		} else {
-			setTotalCost(
-				cart
-					.map(
-						(item: CartItem) =>
-							(getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity
-					)
-					.reduce((a: number, b: number) => a + b)
-					.toFixed(2)
-			);
-			setCartQuantities(cart.map((item: CartItem) => item.quantity).reduce((a: number, b: number) => a + b));
-		}
-	}, [cart]);
+	// useEffect(() => {
+	// 	if (products.length < 1) return;
+	// 	axios({
+	// 		url: "/api/store/cart/set",
+	// 		method: "PUT",
+	// 		data: { cartData: cart },
+	// 	});
+	// 	if (cart.length < 1) {
+	// 		setTotalCost("0.00");
+	// 		setCartQuantities(0);
+	// 	} else {
+	// 		setTotalCost(
+	// 			cart
+	// 				.map(
+	// 					(item: CartItem) =>
+	// 						(getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity
+	// 				)
+	// 				.reduce((a: number, b: number) => a + b)
+	// 				.toFixed(2)
+	// 		);
+	// 		setCartQuantities(cart.map((item: CartItem) => item.quantity).reduce((a: number, b: number) => a + b));
+	// 	}
+	// }, [cart]);
 
 	useEffect(() => {
 		if (!openModal) {
@@ -309,7 +285,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 							<PagedBanner pages={bannerPages} height={"h-72"} />
 						</div>
 					)}
-					{loadingProducts ? (
+					{!subscriptions && !products ? (
 						<>
 							<section className="mt-14">
 								<Title size="medium" className="font-semibold">
@@ -384,7 +360,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 									</div>
 								</section>
 							)}
-							{subscriptions.length >= 1 && (
+							{subscriptions && subscriptions.length >= 1 && (
 								<section className="mt-4">
 									<div className="mt-12 flex flex-col items-center justify-between space-y-2 sm:flex-row sm:space-y-0">
 										<Title size="medium" className="font-semibold">
@@ -409,7 +385,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 									</div>
 								</section>
 							)}
-							{products.length >= 1 && (
+							{products && products.length >= 1 && (
 								<section className="mt-12 mb-12">
 									<Title size="medium" className="text-center font-semibold phone:text-left">
 										Items

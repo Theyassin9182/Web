@@ -2,18 +2,14 @@ import { NextApiResponse } from "next";
 import { NextIronRequest, withSession } from "../../../../util/session";
 import { dbConnect } from "src/util/mongodb";
 import { stripeConnect } from "src/util/stripe";
-import { Metadata, ProductType } from "src/pages/store";
+import { CartItem, Metadata } from "src/pages/store";
 import Stripe from "stripe";
 import { redisConnect } from "src/util/redis";
 import { TIME } from "src/constants";
 
-export interface ProductDetails {
+export interface ProductDetails extends Omit<CartItem, "selectedPrice" | "quantity"> {
 	id: string;
-	name: string;
 	image: string;
-	type: ProductType;
-	category?: string;
-	prices: DetailedPrice[];
 	body: ProductBodies;
 }
 

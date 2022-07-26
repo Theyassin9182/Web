@@ -3,8 +3,8 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import Dropdown from "src/components/ui/Dropdown";
 import { CartItem as CartItems } from "src/pages/store";
+import { useHasMap } from "src/util/hooks/useHasMap";
 import { toTitleCase } from "src/util/string";
-import Stripe from "stripe";
 
 interface Props extends CartItems {
 	index: number;
@@ -24,7 +24,6 @@ export const billingPeriod = {
 };
 
 export default function CartItem({
-	index,
 	size = "large",
 	name,
 	type,
@@ -43,18 +42,22 @@ export default function CartItem({
 		return prices.find((price) => price.id === selectedPrice)!;
 	};
 
-	const setQuantity = (value: any) => {
-		const quantity = parseInt(value);
-		if (isNaN(quantity)) return;
-		if (quantity < 1 || quantity > 100) {
-			setShake(true);
-			setTimeout(() => {
-				setShake(false);
-			}, 820);
-		} else {
-			updateQuantity(index, quantity);
-		}
-	};
+	// const setQuantity = (value: any) => {
+	// 	const quantity = parseInt(value);
+	// 	if (isNaN(quantity)) return;
+	// 	if (quantity < 1 || quantity > 100) {
+	// 		setShake(true);
+	// 		setTimeout(() => {
+	// 			setShake(false);
+	// 		}, 820);
+	// 	} else {
+	// 		updateQuantity(index, quantity);
+	// 	}
+	// };
+
+	// useEffect(() => {
+	// 	console.log(typeof prices);
+	// }, [prices]);
 
 	useEffect(() => {
 		if (shouldShake) {
@@ -138,14 +141,14 @@ export default function CartItem({
 									/>
 								</div>
 							}
-							options={prices.map((p) => ({
+							options={[...prices.values()].map((p) => ({
 								label:
 									size !== "small"
 										? (p.interval!.period === "year"
 												? "Annual"
 												: billingPeriod[p.interval!.period]) + " subscription"
 										: billingPeriod[p.interval!.period],
-								onClick: () => changeInterval(index, p.interval!.period),
+								// onClick: () => changeInterval(index, p.interval!.period),
 							}))}
 						/>
 					) : (
@@ -157,7 +160,7 @@ export default function CartItem({
 									!disabled && "dark:hover:bg-white/10",
 									disabled && "cursor-not-allowed"
 								)}
-								onClick={() => setQuantity(quantity - 1)}
+								// onClick={() => setQuantity(quantity - 1)}
 							>
 								<Iconify
 									icon="ant-design:minus-outlined"
@@ -174,7 +177,7 @@ export default function CartItem({
 									disabled && "cursor-not-allowed"
 								)}
 								value={quantity}
-								onChange={(e) => setQuantity(e.target.value)}
+								// onChange={(e) => setQuantity(e.target.value)}
 								disabled={disabled}
 							/>
 							<div
@@ -184,7 +187,7 @@ export default function CartItem({
 									!disabled && "dark:hover:bg-white/10",
 									disabled && "cursor-not-allowed"
 								)}
-								onClick={() => setQuantity(quantity + 1)}
+								// onClick={() => setQuantity(quantity + 1)}
 							>
 								<Iconify
 									icon="ant-design:plus-outlined"
@@ -207,7 +210,7 @@ export default function CartItem({
 					icon="bx:bx-trash"
 					height={size === "small" ? "15" : "20"}
 					className="hidden w-4 cursor-pointer text-gray-800 transition-colors hover:!text-red-400 dark:text-gray-200 sm:inline sm:w-auto"
-					onClick={() => deleteItem(index)}
+					// onClick={() => deleteItem(index)}
 				/>
 			</div>
 		</div>

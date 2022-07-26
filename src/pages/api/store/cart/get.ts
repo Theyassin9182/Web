@@ -15,7 +15,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		return res.status(401).json({ error: "You are not logged in." });
 	}
 
-	return res.status(200).json({ cart: cart.list() });
+	return res.status(200).json({ ...cart.list() });
 };
 
 export default withSession(handler);
