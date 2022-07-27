@@ -9,9 +9,11 @@ import { toTitleCase } from "src/util/string";
 interface Props extends CartItems {
 	index: number;
 	size: "small" | "large";
-	updateQuantity: any;
 	changeInterval: any;
-	deleteItem: any;
+	setQuantity: (id: string, number: number) => void;
+	increaseQuantity: (id: string, number?: number) => void;
+	decreaseQuantity: (id: string, number?: number) => void;
+	deleteItem: (id: string) => void;
 	disabled: boolean;
 	shouldShake?: boolean;
 }
@@ -24,6 +26,7 @@ export const billingPeriod = {
 };
 
 export default function CartItem({
+	id,
 	size = "large",
 	name,
 	type,
@@ -31,8 +34,10 @@ export default function CartItem({
 	selectedPrice,
 	quantity,
 	image,
-	updateQuantity,
 	changeInterval,
+	setQuantity,
+	increaseQuantity,
+	decreaseQuantity,
 	deleteItem,
 	disabled,
 	shouldShake = false,
@@ -104,7 +109,7 @@ export default function CartItem({
 					icon="bx:bx-trash"
 					height={size === "small" ? "15" : "20"}
 					className="mr-2.5 inline w-4 cursor-pointer text-gray-800 transition-colors hover:!text-red-400 dark:text-gray-200 sm:hidden sm:w-auto"
-					onClick={deleteItem}
+					onClick={() => deleteItem(id)}
 				/>
 			</div>
 			<div
@@ -160,7 +165,7 @@ export default function CartItem({
 									!disabled && "dark:hover:bg-white/10",
 									disabled && "cursor-not-allowed"
 								)}
-								// onClick={() => setQuantity(quantity - 1)}
+								onClick={() => decreaseQuantity(id)}
 							>
 								<Iconify
 									icon="ant-design:minus-outlined"
@@ -177,7 +182,7 @@ export default function CartItem({
 									disabled && "cursor-not-allowed"
 								)}
 								value={quantity}
-								// onChange={(e) => setQuantity(e.target.value)}
+								onChange={(e) => setQuantity(id, parseInt(e.target.value) ?? 1)}
 								disabled={disabled}
 							/>
 							<div
@@ -187,7 +192,7 @@ export default function CartItem({
 									!disabled && "dark:hover:bg-white/10",
 									disabled && "cursor-not-allowed"
 								)}
-								// onClick={() => setQuantity(quantity + 1)}
+								onClick={() => increaseQuantity(id)}
 							>
 								<Iconify
 									icon="ant-design:plus-outlined"
@@ -210,7 +215,7 @@ export default function CartItem({
 					icon="bx:bx-trash"
 					height={size === "small" ? "15" : "20"}
 					className="hidden w-4 cursor-pointer text-gray-800 transition-colors hover:!text-red-400 dark:text-gray-200 sm:inline sm:w-auto"
-					// onClick={() => deleteItem(index)}
+					onClick={() => deleteItem(id)}
 				/>
 			</div>
 		</div>

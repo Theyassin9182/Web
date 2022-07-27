@@ -34,7 +34,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 			req.session.set("cart", controller.list());
 
 			await req.session.save();
-			return res.status(200).json({ cart: controller.list() });
+			return res.status(200).json({ ...controller.list() });
 		}
 	} catch (e: any) {
 		console.error(e.message.split(/"/g, ""));

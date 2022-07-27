@@ -34,26 +34,6 @@ export default function ShoppingCart({ hovered }: Props) {
 	let timeoutEnter: NodeJS.Timeout;
 
 	const deleteItem = async (id: string) => {
-		const expectedOutput = controller.delItem(id);
-		await mutate(
-			async () => {
-				try {
-					let { data } = await axios({
-						url: `/api/store/cart/mutate?id=${id}`,
-						method: "PATCH",
-						data: product,
-					});
-
-					return data.cart;
-				} catch {}
-			},
-			{
-				optimisticData: expectedOutput.list(false) as CartMap,
-				rollbackOnError: true,
-				populateCache: true,
-				revalidate: false,
-			}
-		);
 		// const oldCart = cart;
 		// oldCart.splice(index, 1);
 		// mutation.mutate(oldCart);
@@ -116,9 +96,11 @@ export default function ShoppingCart({ hovered }: Props) {
 											size="small"
 											index={i}
 											{...item}
-											changeInterval={changeInterval}
-											updateQuantity={updateQuantity}
-											deleteItem={deleteItem}
+											changeInterval={changeInterval} // Not done
+											setQuantity={mutate.setQty}
+											increaseQuantity={mutate.incrQty}
+											decreaseQuantity={mutate.decrQty}
+											deleteItem={mutate.delItem}
 											disabled={false}
 										/>
 									))}

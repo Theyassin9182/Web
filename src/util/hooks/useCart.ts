@@ -1,7 +1,8 @@
-import useSWR, { KeyedMutator } from "swr";
+import useSWR from "swr";
 import axios, { AxiosError } from "axios";
 import { CartItem } from "src/pages/store";
-import CartController, { accessCart, CartMap } from "../cart";
+import CartController, { CartMap } from "../cart";
+import Mutations from "../cart/mutations";
 
 export const fetcher = (url: string) =>
 	axios(url)
@@ -18,7 +19,7 @@ export const fetcher = (url: string) =>
 interface useCartImpl {
 	cart: CartItem[];
 	error: any;
-	mutate: KeyedMutator<CartMap>;
+	mutate: Mutations;
 	controller: CartController;
 	isValidating?: boolean;
 	isLoading?: boolean;
@@ -42,7 +43,7 @@ export const useCart = (): useCartImpl => {
 		controller,
 		cart,
 		error,
-		mutate,
+		mutate: new Mutations(mutate, controller),
 		isValidating,
 		isLoading: !(!error && !data),
 	};
