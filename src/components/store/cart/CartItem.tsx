@@ -48,19 +48,6 @@ export default function CartItem({
 		return prices.find((price) => price.id === selectedPrice)!;
 	};
 
-	// const setQuantity = (value: any) => {
-	// 	const quantity = parseInt(value);
-	// 	if (isNaN(quantity)) return;
-	// 	if (quantity < 1 || quantity > 100) {
-	// 		setShake(true);
-	// 		setTimeout(() => {
-	// 			setShake(false);
-	// 		}, 820);
-	// 	} else {
-	// 		updateQuantity(index, quantity);
-	// 	}
-	// };
-
 	useEffect(() => {
 		if (shouldShake) {
 			setShake(true);
@@ -69,6 +56,14 @@ export default function CartItem({
 			}, 820);
 		}
 	}, [shouldShake]);
+
+	useEffect(() => {
+		if (shake) {
+			setTimeout(() => {
+				setShake(false);
+			}, 820);
+		}
+	}, [shake]);
 
 	return (
 		<div
@@ -162,7 +157,10 @@ export default function CartItem({
 									!disabled && "dark:hover:bg-white/10",
 									disabled && "cursor-not-allowed"
 								)}
-								onClick={() => quantity - 1 >= 1 && decreaseQuantity(id)}
+								onClick={() => {
+									if (quantity - 1 < 1) return setShake(true);
+									decreaseQuantity(id);
+								}}
 							>
 								<Iconify
 									icon="ant-design:minus-outlined"
@@ -179,7 +177,11 @@ export default function CartItem({
 									disabled && "cursor-not-allowed"
 								)}
 								value={quantity}
-								onChange={(e) => setQuantity(id, parseInt(e.target.value) ?? 1)}
+								onChange={(e) => {
+									if (parseInt(e.target.value) > 100 || parseInt(e.target.value) < 1)
+										return setShake(true);
+									setQuantity(id, parseInt(e.target.value) ?? 1);
+								}}
 								disabled={disabled}
 							/>
 							<div
@@ -189,7 +191,10 @@ export default function CartItem({
 									!disabled && "dark:hover:bg-white/10",
 									disabled && "cursor-not-allowed"
 								)}
-								onClick={() => increaseQuantity(id)}
+								onClick={(e) => {
+									if (quantity + 1 > 100) return setShake(true);
+									increaseQuantity(id);
+								}}
 							>
 								<Iconify
 									icon="ant-design:plus-outlined"
