@@ -15,16 +15,14 @@ import PopularProduct from "src/components/store/PopularProduct";
 import Product from "src/components/store/Product";
 import { DetailedPrice, ProductDetails } from "../api/store/product/details";
 import LoadingProduct from "src/components/store/LoadingProduct";
-import { getSelectedPriceValue } from "src/util/store";
 import { Session } from "next-iron-session";
 import { dbConnect } from "src/util/mongodb";
 import BannedUser from "src/components/store/BannedUser";
 import Dialog from "src/components/Dialog";
 import AgeVerification from "src/components/store/modals/AgeVerification";
 import { STORE_BLOCKED_COUNTRIES, STORE_CUSTOM_MIN_AGE, STORE_NO_MIN_AGE } from "src/constants";
-import { useCart } from "src/util/hooks/useCart";
-import { CartMap } from "src/util/cart";
-import { useHasMap } from "src/util/hooks/useHasMap";
+import { fetcher, useCart } from "src/util/hooks/useCart";
+import useSWR from "swr";
 
 interface PossibleMetadata {
 	type: ProductType;
@@ -82,16 +80,22 @@ interface Props extends PageProps {
 
 export default function StoreHome({ user, banned, country, verification }: Props) {
 	const { mutate } = useCart();
-	const {
-		data: subscriptions,
-		error: subsError,
-		isValidating: areSubsValidating,
-	} = useHasMap<ListedProduct[]>("/api/store/products/subscriptions/list", "prices", {}, true);
-	const {
-		data: products,
-		error: productsError,
-		isValidating: areProductsValidating,
-	} = useHasMap<ListedProduct[]>("/api/store/products/one-time/list", "prices", {}, true);
+	const { data: bannerPages, isValidating: areBannerPagesValidating } = useSWR<BannerPage[]>(
+		banned ? null : "/api/store/banners/list?active=true",
+		fetcher
+	);
+	const { data: popularProducts, isValidating: arePopsValidating } = useSWR<UpsellProduct[]>(
+		banned ? null : "/api/store/products/popular",
+		fetcher
+	);
+	const { data: subscriptions, isValidating: areSubsValidating } = useSWR<ListedProduct[]>(
+		banned ? null : "/api/store/products/subscriptions/list",
+		fetcher
+	);
+	const { data: products, isValidating: areProductsValidating } = useSWR<ListedProduct[]>(
+		banned ? null : "/api/store/products/one-time/list",
+		fetcher
+	);
 
 	const [userCountry, setUserCountry] = useState(country);
 	const [modalProductId, setModalProductId] = useState("");
@@ -101,66 +105,12 @@ export default function StoreHome({ user, banned, country, verification }: Props
 	const [processingCartChange, setProcessingCartChange] = useState(false);
 	const [cartButtonHovered, setCartButtonHovered] = useState(false);
 
-	const [totalCost, setTotalCost] = useState<string>("...");
-	const [cartQuantities, setCartQuantities] = useState(0);
-	const [cartItems, setCartItems] = useState<CartItem[] | []>([]);
-
-	const [loadingProducts, setLoadingProducts] = useState(true);
-	const [popularProducts, setPopularProducts] = useState<UpsellProduct[]>([]);
-	// const [subscriptions, setSubscriptions] = useState<ListedProduct[]>([]);
-	// const [products, setProducts] = useState<ListedProduct[]>([]);
-
-	const [bannerPages, setBannerPages] = useState<BannerPage[]>([]);
-
 	const [requiresAgeVerification, setRequiresAgeVerification] = useState(
 		!(
 			Object.keys(STORE_NO_MIN_AGE).concat(Object.keys(STORE_BLOCKED_COUNTRIES)).includes(country) &&
 			!verification.verified
 		) && verification.years < (STORE_CUSTOM_MIN_AGE[userCountry as keyof typeof STORE_CUSTOM_MIN_AGE] ?? 18)
 	);
-	const getBanners = async () => {
-		try {
-			const { data: visibleBanners } = await axios("/api/store/banners/list?active=true");
-			setBannerPages(visibleBanners);
-		} catch (e) {
-			if (process.env.NODE_ENV !== "production" && process.env.IN_TESTING) {
-				console.error(e);
-			}
-		}
-	};
-
-	const getAllProducts = async () => {
-		try {
-			let ProductsAPI = axios.create({
-				baseURL: "/api/store/products/",
-			});
-			axios
-				.all([
-					ProductsAPI.get("/popular"),
-					// ProductsAPI.get("/one-time/list"),
-					// ProductsAPI.get("/subscriptions/list"),
-				])
-				.then(
-					axios.spread(async ({ data: popularProds }, { data: singles } /*,{ data: subscriptions }*/) => {
-						setPopularProducts(popularProds);
-						// setProducts(singles);
-						// setSubscriptions(subscriptions);
-					})
-				)
-				.catch((e) => {
-					if (process.env.NODE_ENV !== "production" && process.env.IN_TESTING) {
-						console.error(e);
-					}
-				})
-				.finally(() => {
-					setLoadingProducts(false);
-				});
-		} catch (e) {
-			if (process.env.NODE_ENV !== "production" && process.env.IN_TESTING) {
-				console.error(e);
-			}
-		}
-	};
 
 	const addProductById = async (id: string) => {
 		if (!processingCartChange) {
@@ -182,13 +132,6 @@ export default function StoreHome({ user, banned, country, verification }: Props
 		}
 	};
 
-	useEffect(() => {
-		if (!banned) {
-			getBanners();
-			getAllProducts();
-		}
-	}, []);
-
 	// If the country prop is unknown, re-attempt to retrieve it via Cloudflare Quic.
 	useEffect(() => {
 		if (country === "??") {
@@ -207,30 +150,6 @@ export default function StoreHome({ user, banned, country, verification }: Props
 			})();
 		}
 	}, [country]);
-
-	// useEffect(() => {
-	// 	if (products.length < 1) return;
-	// 	axios({
-	// 		url: "/api/store/cart/set",
-	// 		method: "PUT",
-	// 		data: { cartData: cart },
-	// 	});
-	// 	if (cart.length < 1) {
-	// 		setTotalCost("0.00");
-	// 		setCartQuantities(0);
-	// 	} else {
-	// 		setTotalCost(
-	// 			cart
-	// 				.map(
-	// 					(item: CartItem) =>
-	// 						(getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity
-	// 				)
-	// 				.reduce((a: number, b: number) => a + b)
-	// 				.toFixed(2)
-	// 		);
-	// 		setCartQuantities(cart.map((item: CartItem) => item.quantity).reduce((a: number, b: number) => a + b));
-	// 	}
-	// }, [cart]);
 
 	useEffect(() => {
 		if (!openModal) {
@@ -261,12 +180,19 @@ export default function StoreHome({ user, banned, country, verification }: Props
 						<Title size="big">Store</Title>
 						<ShoppingCart hovered={setCartButtonHovered} />
 					</div>
-					{bannerPages.length >= 1 && (
+					{areBannerPagesValidating ? (
 						<div className={clsx(cartButtonHovered && "-z-10", "sticky mt-3 h-72 w-full max-w-7xl")}>
-							<PagedBanner pages={bannerPages} height={"h-72"} />
+							<div className="h-72 w-full animate-pulse rounded-lg bg-neutral-300 dark:bg-dank-500"></div>
 						</div>
+					) : (
+						bannerPages &&
+						bannerPages.length >= 1 && (
+							<div className={clsx(cartButtonHovered && "-z-10", "sticky mt-3 h-72 w-full max-w-7xl")}>
+								<PagedBanner pages={bannerPages} height={"h-72"} />
+							</div>
+						)
 					)}
-					{!subscriptions && !products ? (
+					{arePopsValidating || areProductsValidating || areSubsValidating ? (
 						<>
 							<section className="mt-14">
 								<Title size="medium" className="font-semibold">
@@ -321,7 +247,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 						</>
 					) : (
 						<>
-							{popularProducts.length >= 1 && (
+							{popularProducts && popularProducts.length >= 1 && (
 								<section className="mt-14">
 									<Title size="medium" className="font-semibold">
 										Popular products

@@ -10,5 +10,9 @@ interface Props {
 }
 
 export default function LoadingProduct({ variant }: Props) {
-	return <div className={clsx(ProductType[variant], "mb-1 animate-pulse rounded-md dark:bg-dank-500")}></div>;
+	return (
+		<div
+			className={clsx(ProductType[variant], "mb-1 animate-pulse rounded-md bg-neutral-300 dark:bg-dank-500")}
+		></div>
+	);
 }
