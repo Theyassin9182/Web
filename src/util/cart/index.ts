@@ -1,4 +1,5 @@
 import { CartItem } from "src/pages/store";
+import Stripe from "stripe";
 import mutations from "./mutations";
 
 let cachedController: CartController;
@@ -92,6 +93,21 @@ export default class CartController {
 	 */
 	overrideWith(cart: CartMap) {
 		this.items = cart;
+		return this;
+	}
+
+	changeInterval(id: string, interval: Stripe.Price.Recurring.Interval) {
+		if (this.items.has(id)) {
+			const product = this.items.get(id);
+			if (product?.type !== "subscription") {
+				throw Error("Changing a item interval is only supported on subscription products.");
+			}
+			const newPrice = product.prices.find((price) => price.interval!.period === interval);
+			if (!newPrice) {
+				throw Error(`The selected item does not have an price for the interval ${interval}.`);
+			}
+			this.items.set(id, { ...product, selectedPrice: newPrice.id });
+		}
 		return this;
 	}
 

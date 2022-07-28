@@ -3,12 +3,19 @@ import { CartItem } from "src/pages/store";
 import { KeyedMutator } from "swr";
 import CartController, { CartMap } from ".";
 import { MutationTasks, PossibleMutations } from "src/pages/api/store/cart/mutate";
+import Stripe from "stripe";
 
 type MutationActions = typeof PossibleMutations[number] | "add";
 type MutationItem<T extends MutationActions> = T extends typeof PossibleMutations[number] ? string : CartItem;
-interface MutationOptions {
-	quantity: number;
-}
+type MutationOptions<T extends typeof MutationTasks[number]> = T extends "incrqty" | "decrqty" | "setqty"
+	? {
+			quantity: number;
+			interval?: never;
+	  }
+	: {
+			quantity?: never;
+			interval: Stripe.Price.Recurring.Interval;
+	  };
 export default class Mutations {
 	private readonly mutator: KeyedMutator<CartMap>;
 	private readonly controller: CartController;
@@ -16,6 +23,7 @@ export default class Mutations {
 	constructor(mutator: KeyedMutator<CartMap>, controller: CartController) {
 		this.mutator = mutator;
 		this.controller = controller;
+		this.changeInterval = this.changeInterval.bind(this);
 		this.addItem = this.addItem.bind(this);
 		this.delItem = this.delItem.bind(this);
 		this.incrQty = this.incrQty.bind(this);
@@ -27,7 +35,7 @@ export default class Mutations {
 		action: "update",
 		item: string,
 		task: typeof MutationTasks[number],
-		options: MutationOptions
+		options: MutationOptions<typeof task>
 	): Promise<void>;
 	private sendMutation(action: "add", item: CartItem, task?: undefined, options?: undefined): Promise<void>;
 	private sendMutation(action: "delete", item: string, task?: undefined, options?: undefined): Promise<void>;
@@ -36,7 +44,7 @@ export default class Mutations {
 		action: T,
 		item: MutationItem<T>,
 		task: T extends "update" ? typeof MutationTasks[number] : undefined,
-		options: T extends "update" ? MutationOptions : undefined
+		options: T extends "update" ? MutationOptions<typeof MutationTasks[number]> : undefined
 	): Promise<void> {
 		return new Promise(async (resolve, reject) => {
 			let expectedOutput;
@@ -52,6 +60,9 @@ export default class Mutations {
 				case "update":
 					if (typeof item !== "string") break;
 					switch (task) {
+						case "interval":
+							expectedOutput = this.controller.changeInterval(item, options!.interval!);
+							break;
 						case "incrqty":
 							expectedOutput = this.controller.increaseQuantity(item);
 							break;
@@ -105,6 +116,10 @@ export default class Mutations {
 
 	async delItem(id: string) {
 		await this.sendMutation("delete", id);
+	}
+
+	async changeInterval(id: string, interval: Stripe.Price.Recurring.Interval) {
+		await this.sendMutation("update", id, "interval", { interval });
 	}
 
 	async incrQty(id: string, quantity: number = 1) {

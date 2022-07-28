@@ -150,7 +150,7 @@ export default function CartItem({
 												? "Annual"
 												: billingPeriod[p.interval!.period]) + " subscription"
 										: billingPeriod[p.interval!.period],
-								// onClick: () => changeInterval(index, p.interval!.period),
+								onClick: () => changeInterval(id, p.interval!.period),
 							}))}
 						/>
 					) : (

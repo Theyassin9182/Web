@@ -7,8 +7,6 @@ import { useCart } from "src/util/hooks/useCart";
 import { getSelectedPriceValue } from "src/util/store";
 import { CartItem as ICartItem } from "src/pages/store";
 import CartItem from "./cart/CartItem";
-import axios from "axios";
-import { CartMap } from "src/util/cart";
 
 interface Props {
 	hovered: Dispatch<SetStateAction<boolean>>;
@@ -33,10 +31,6 @@ export default function ShoppingCart({ hovered }: Props) {
 	const [showCart, setShowCart] = useState(false);
 	// Thanks badosz
 	let timeoutEnter: NodeJS.Timeout;
-
-	// useEffect(() => {
-	// 	console.log(isValidating);
-	// }, [isValidating]);
 
 	const changeInterval = (index: number, interval: "month" | "year") => {};
 
@@ -83,7 +77,7 @@ export default function ShoppingCart({ hovered }: Props) {
 												size="small"
 												index={i}
 												{...item}
-												changeInterval={changeInterval} // Not done
+												changeInterval={mutate.changeInterval}
 												setQuantity={mutate.setQty}
 												increaseQuantity={mutate.incrQty}
 												decreaseQuantity={mutate.decrQty}

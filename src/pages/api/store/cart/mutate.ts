@@ -4,7 +4,7 @@ import { accessCart } from "src/util/cart";
 import { NextIronRequest, withSession } from "../../../../util/session";
 
 export const PossibleMutations = ["delete", "update"] as const;
-export const MutationTasks = ["incrqty", "decrqty", "setqty"] as const;
+export const MutationTasks = ["interval", "incrqty", "decrqty", "setqty"] as const;
 
 const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	if (req.method?.toLowerCase() !== "patch") {
@@ -49,6 +49,9 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 					return res.status(400).json({ message: "Invalid update task." });
 				}
 				switch (task) {
+					case "interval":
+						controller.changeInterval(productId, req.body.interval!);
+						break;
 					case "incrqty":
 						controller.increaseQuantity(productId, parseInt((req.body.quantity as string) ?? 1));
 						break;
