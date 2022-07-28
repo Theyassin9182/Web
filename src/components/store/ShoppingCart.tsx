@@ -57,10 +57,6 @@ export default function ShoppingCart({ hovered }: Props) {
 		hovered(showCart);
 	}, [showCart]);
 
-	useEffect(() => {
-		console.log(cart, data, isLoading, isValidating, total, showCart);
-	}, [cart, data, mutate, isLoading, isValidating, total, showCart]);
-
 	return (
 		<div onMouseEnter={buttonEnter} onMouseLeave={buttonLeave}>
 			<Button size="small" className="w-full sm:w-auto" variant="dark" onClick={() => router.push(`/store/cart`)}>
@@ -77,7 +73,7 @@ export default function ShoppingCart({ hovered }: Props) {
 				(cart.length >= 1 ? (
 					<div className="absolute right-0 z-10 w-screen max-w-md pt-2 motion-safe:animate-slide-in">
 						<div className="w-full rounded-md bg-neutral-200 py-3 px-4 dark:bg-dank-600">
-							<Title size="small">Your cart ({cart.length})</Title>
+							<Title size="small">Your cart</Title>
 							<div className="flex flex-col">
 								<div>
 									{!isValidating &&

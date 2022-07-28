@@ -65,7 +65,6 @@ export default class Mutations {
 					break;
 			}
 			if (!expectedOutput) {
-				console.log(expectedOutput);
 				return reject("Failed to construct expected mutation output.");
 			}
 			await this.mutator(
