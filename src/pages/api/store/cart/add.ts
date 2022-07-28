@@ -21,7 +21,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	try {
 		const controller = accessCart(req.session.get("cart"));
 
-		const idToCreate = req.query.id?.toString();
+		const idToCreate = req.body.id;
 		if (idToCreate) {
 			if (controller.has(idToCreate)) {
 				return res.status(400).json({
@@ -32,7 +32,6 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 				.addItem(idToCreate, req.body)
 				.catch((e) => res.status(400).json({ error: e.message.replace(/"/g, "") }));
 			req.session.set("cart", controller.list());
-
 			await req.session.save();
 			return res.status(200).json({ ...controller.list() });
 		}

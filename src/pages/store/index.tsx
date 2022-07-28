@@ -81,7 +81,7 @@ interface Props extends PageProps {
 }
 
 export default function StoreHome({ user, banned, country, verification }: Props) {
-	const { cart, error: cartError, mutate, controller } = useCart();
+	const { mutate } = useCart();
 	const {
 		data: subscriptions,
 		error: subsError,
@@ -172,26 +172,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 				if (requiresAgeVerification && product.category?.toLowerCase() === "lootbox") {
 					return setOpenDialog(true);
 				}
-				const expectedOutput = controller.addItem(product.id, product);
-				await mutate(
-					async () => {
-						try {
-							let { data } = await axios({
-								url: `/api/store/cart/add?id=${product.id}`,
-								method: "PUT",
-								data: product,
-							});
-
-							return data.cart;
-						} catch {}
-					},
-					{
-						optimisticData: (await expectedOutput).list(false) as CartMap,
-						rollbackOnError: true,
-						populateCache: true,
-						revalidate: false,
-					}
-				);
+				await mutate.addItem(product);
 			} catch (e) {
 				console.error(e);
 				toast.error("We were unable to update your cart information. Please try again later.");

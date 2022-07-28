@@ -7,7 +7,7 @@ export const PossibleMutations = ["delete", "update"] as const;
 export const MutationTasks = ["incrqty", "decrqty", "setqty"] as const;
 
 const handler = async (req: NextIronRequest, res: NextApiResponse) => {
-	if (req.method?.toLowerCase() !== "PATCH") {
+	if (req.method?.toLowerCase() !== "patch") {
 		return res.status(405).json({
 			message: `Method '${req.method?.toUpperCase()}' cannot be used on this endpoint.`,
 		});
@@ -27,7 +27,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		return res.status(400).json({ message: "Mutations require a product ID." });
 	}
 
-	if (!req.body) {
+	if (!req.body && action !== "delete") {
 		return res.status(400).json({ message: "Invalid or no body." });
 	}
 
@@ -45,7 +45,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 				break;
 			case "update":
 				const task = req.query.task as typeof MutationTasks[number];
-				if (!task || MutationTasks.includes(task)) {
+				if (!task || !MutationTasks.includes(task)) {
 					return res.status(400).json({ message: "Invalid update task." });
 				}
 				switch (task) {
@@ -62,7 +62,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		}
 		req.session.set("cart", controller.list());
 		await req.session.save();
-		return res.status(200).json({ cart: controller.list() });
+		return res.status(200).json({ ...controller.list() });
 	} catch (e: any) {
 		console.error(e.message.replace(/"/g, ""));
 		return res.status(500).json({

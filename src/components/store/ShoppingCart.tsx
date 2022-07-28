@@ -16,14 +16,15 @@ interface Props {
 
 export default function ShoppingCart({ hovered }: Props) {
 	const router = useRouter();
-	const { cart, error, mutate, controller, isLoading } = useCart();
+	const { cart, data, error, mutate, controller, isLoading, isValidating } = useCart();
 	const itemCount = cart.reduce((prev, curr) => prev + curr.quantity, 0);
 	const total =
-		cart.length >= 1
+		!isValidating && cart.length >= 1
 			? cart
 					.reduce(
 						(acc: number, item: ICartItem) =>
-							acc + (getSelectedPriceValue(item, item.selectedPrice)!.value / 100) * item.quantity,
+							acc +
+							((getSelectedPriceValue(item, item.selectedPrice)?.value ?? 100) / 100) * item.quantity,
 						0
 					)
 					.toFixed(2)
@@ -33,26 +34,11 @@ export default function ShoppingCart({ hovered }: Props) {
 	// Thanks badosz
 	let timeoutEnter: NodeJS.Timeout;
 
-	const deleteItem = async (id: string) => {
-		// const oldCart = cart;
-		// oldCart.splice(index, 1);
-		// mutation.mutate(oldCart);
-		// if (oldCart.length < 1) setShowCart(false);
-	};
+	// useEffect(() => {
+	// 	console.log(isValidating);
+	// }, [isValidating]);
 
-	const updateQuantity = (index: number, quantity: number) => {
-		// const oldCart = cart;
-		// oldCart[index].quantity = quantity;
-		// mutation.mutate(oldCart);
-	};
-
-	const changeInterval = (index: number, interval: "month" | "year") => {
-		// const oldCart = cart;
-		// oldCart[index].selectedPrice = oldCart[index].prices.filter(
-		// 	(price) => price.interval?.period === interval
-		// )[0].id;
-		// mutation.mutate(oldCart);
-	};
+	const changeInterval = (index: number, interval: "month" | "year") => {};
 
 	const buttonEnter = () => {
 		timeoutEnter = setTimeout(() => {
@@ -71,6 +57,10 @@ export default function ShoppingCart({ hovered }: Props) {
 		hovered(showCart);
 	}, [showCart]);
 
+	useEffect(() => {
+		console.log(cart, data, isLoading, isValidating, total, showCart);
+	}, [cart, data, mutate, isLoading, isValidating, total, showCart]);
+
 	return (
 		<div onMouseEnter={buttonEnter} onMouseLeave={buttonLeave}>
 			<Button size="small" className="w-full sm:w-auto" variant="dark" onClick={() => router.push(`/store/cart`)}>
@@ -87,23 +77,24 @@ export default function ShoppingCart({ hovered }: Props) {
 				(cart.length >= 1 ? (
 					<div className="absolute right-0 z-10 w-screen max-w-md pt-2 motion-safe:animate-slide-in">
 						<div className="w-full rounded-md bg-neutral-200 py-3 px-4 dark:bg-dank-600">
-							<Title size="small">Your cart</Title>
+							<Title size="small">Your cart ({cart.length})</Title>
 							<div className="flex flex-col">
 								<div>
-									{cart.map((item, i) => (
-										<CartItem
-											key={item.id}
-											size="small"
-											index={i}
-											{...item}
-											changeInterval={changeInterval} // Not done
-											setQuantity={mutate.setQty}
-											increaseQuantity={mutate.incrQty}
-											decreaseQuantity={mutate.decrQty}
-											deleteItem={mutate.delItem}
-											disabled={false}
-										/>
-									))}
+									{!isValidating &&
+										cart.map((item, i) => (
+											<CartItem
+												key={item.id}
+												size="small"
+												index={i}
+												{...item}
+												changeInterval={changeInterval} // Not done
+												setQuantity={mutate.setQty}
+												increaseQuantity={mutate.incrQty}
+												decreaseQuantity={mutate.decrQty}
+												deleteItem={mutate.delItem}
+												disabled={false}
+											/>
+										))}
 								</div>
 								<div className="mt-5 flex justify-end">
 									<div className="flex w-2/3 flex-col">

@@ -44,6 +44,7 @@ export default function CartItem({
 }: Props) {
 	const [shake, setShake] = useState(shouldShake);
 	const price = () => {
+		if (!prices) return;
 		return prices.find((price) => price.id === selectedPrice)!;
 	};
 
@@ -59,10 +60,6 @@ export default function CartItem({
 	// 		updateQuantity(index, quantity);
 	// 	}
 	// };
-
-	// useEffect(() => {
-	// 	console.log(typeof prices);
-	// }, [prices]);
 
 	useEffect(() => {
 		if (shouldShake) {
@@ -131,7 +128,7 @@ export default function CartItem({
 									)}
 								>
 									<p>
-										{price().interval?.period === "year"
+										{price()?.interval?.period === "year"
 											? size === "small"
 												? "Annually"
 												: "Annual subscription"
@@ -165,7 +162,7 @@ export default function CartItem({
 									!disabled && "dark:hover:bg-white/10",
 									disabled && "cursor-not-allowed"
 								)}
-								onClick={() => decreaseQuantity(id)}
+								onClick={() => quantity - 1 >= 1 && decreaseQuantity(id)}
 							>
 								<Iconify
 									icon="ant-design:minus-outlined"
@@ -209,7 +206,7 @@ export default function CartItem({
 						size === "small" ? "min-w-[50px] text-sm" : "min-w-[70px] text-sm sm:text-base"
 					)}
 				>
-					${((price().value / 100) * quantity).toFixed(2)}
+					${(((price()?.value ?? 100) / 100) * quantity).toFixed(2)}
 				</p>
 				<Iconify
 					icon="bx:bx-trash"

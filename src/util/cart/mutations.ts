@@ -14,9 +14,13 @@ export default class Mutations {
 	private readonly controller: CartController;
 
 	constructor(mutator: KeyedMutator<CartMap>, controller: CartController) {
-		if (!window) throw "Invalid context, mutations can only be called from the frontend!";
 		this.mutator = mutator;
 		this.controller = controller;
+		this.addItem = this.addItem.bind(this);
+		this.delItem = this.delItem.bind(this);
+		this.incrQty = this.incrQty.bind(this);
+		this.decrQty = this.decrQty.bind(this);
+		this.setQty = this.setQty.bind(this);
 	}
 
 	private sendMutation(
@@ -31,7 +35,7 @@ export default class Mutations {
 	private async sendMutation<T extends MutationActions>(
 		action: T,
 		item: MutationItem<T>,
-		task: T extends "update" ? string : undefined,
+		task: T extends "update" ? typeof MutationTasks[number] : undefined,
 		options: T extends "update" ? MutationOptions : undefined
 	): Promise<void> {
 		return new Promise(async (resolve, reject) => {
@@ -47,10 +51,21 @@ export default class Mutations {
 					break;
 				case "update":
 					if (typeof item !== "string") break;
-					expectedOutput = this.controller.delItem(item);
+					switch (task) {
+						case "incrqty":
+							expectedOutput = this.controller.increaseQuantity(item);
+							break;
+						case "decrqty":
+							expectedOutput = this.controller.decreaseQuantity(item);
+							break;
+						case "setqty":
+							expectedOutput = this.controller.setItemQuantity(item, options?.quantity ?? 1);
+							break;
+					}
 					break;
 			}
 			if (!expectedOutput) {
+				console.log(expectedOutput);
 				return reject("Failed to construct expected mutation output.");
 			}
 			await this.mutator(
@@ -64,7 +79,7 @@ export default class Mutations {
 								  }`;
 						let { data } = await axios({
 							url,
-							method: action === "add" ? "POST" : "PATCH",
+							method: action === "add" ? "PUT" : "PATCH",
 							...(action === "add" && { data: { ...(item as CartItem) } }),
 							...(action === "update" && { data: { ...options } }),
 						});

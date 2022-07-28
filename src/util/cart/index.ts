@@ -100,6 +100,7 @@ export default class CartController {
 			const current = this.items.get(id)!;
 			this.items.set(id, { ...current, quantity: current.quantity + qty });
 		}
+		return this;
 	}
 
 	decreaseQuantity(id: string, qty: number = 1) {
@@ -107,6 +108,7 @@ export default class CartController {
 			const current = this.items.get(id)!;
 			this.items.set(id, { ...current, quantity: current.quantity - qty });
 		}
+		return this;
 	}
 
 	setItemQuantity(id: string, qty: number) {
@@ -114,5 +116,6 @@ export default class CartController {
 			const current = this.items.get(id)!;
 			this.items.set(id, { ...current, quantity: qty });
 		}
+		return this;
 	}
 }
