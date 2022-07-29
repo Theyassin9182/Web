@@ -1,6 +1,7 @@
 import { NextApiResponse } from "next";
 import { CartItem } from "src/pages/store";
 import { DiscountItem } from "src/pages/store/checkout";
+import CartController from "src/util/cart/controller";
 import { calculateDiscount } from "src/util/discounts";
 import { getSelectedPriceValue } from "src/util/store";
 import { stripeConnect } from "src/util/stripe";
@@ -11,6 +12,7 @@ export interface AppliedDiscount {
 	code: string;
 	discountedItems: DiscountItem[];
 	totalSavings: number;
+	isPercent: boolean;
 }
 
 const handler = async (req: NextIronRequest, res: NextApiResponse) => {
@@ -72,7 +74,8 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	}
 
 	const coupon: Stripe.Coupon = promotionalCode.coupon;
-	const cart: CartItem[] = await req.session.get("cart")!;
+	const controller = new CartController(req.session.get("cart"));
+	const cart = controller.iterable();
 
 	if (cart[0].type === "subscription") {
 		return res.status(400).json({
