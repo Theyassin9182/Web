@@ -5,7 +5,7 @@ import { Title } from "src/components/Title";
 import Container from "src/components/ui/Container";
 import { PageProps, UserAge, UserData } from "src/types";
 import { withSession } from "src/util/session";
-import { CartItem as CartItems, Metadata, ProductType } from ".";
+import { CartItem as ICartItem, Metadata, ProductType } from ".";
 import CartItem from "src/components/store/cart/CartItem";
 import MarketingBox, { MarketBoxVariants } from "src/components/store/cart/MarketingBox";
 import Button from "src/components/ui/Button";
@@ -24,14 +24,23 @@ import { dbConnect } from "src/util/mongodb";
 import { PurchaseRecord } from "../api/store/checkout/finalize/paypal";
 import { stripeConnect } from "src/util/stripe";
 import { getSelectedPriceValue } from "src/util/store";
-import { STORE_BLOCKED_COUNTRIES, STORE_CUSTOM_MIN_AGE, STORE_NO_MIN_AGE, TIME } from "src/constants";
+import {
+	STORE_BLOCKED_COUNTRIES,
+	STORE_CUSTOM_MIN_AGE,
+	STORE_FLAT_DISCOUNT_PERCENTAGE,
+	STORE_MINIMUM_PURCHASE_VALUE,
+	STORE_NO_MIN_AGE,
+	STORE_TAX_PERCENT,
+	TIME,
+} from "src/constants";
 import AgeVerification from "src/components/store/modals/AgeVerification";
 import Dialog from "src/components/Dialog";
 import SubscriptionInfo from "src/components/store/cart/SubscriptionInfo";
 import { format } from "date-fns";
+import { useCart } from "src/util/hooks/useCart";
 
 interface Props extends PageProps {
-	cartData: CartItems[];
+	cartData: ICartItem[];
 	upsells: UpsellProduct[];
 	country: keyof typeof STORE_CUSTOM_MIN_AGE | (string & {});
 	verification: Omit<UserAge, "verifiedOn">;
@@ -49,18 +58,17 @@ export interface UpsellProduct {
 	}[];
 }
 
-export default function Cart({ cartData, upsells, country, user, verification }: Props) {
+export default function Cart({ upsells, country, user, verification }: Props) {
 	const router = useRouter();
 
+	const { cart, mutate, controller, isValidating } = useCart();
 	const marketingBoxView = useRef<MarketBoxVariants>(Math.random() >= 0.5 ? "gifting" : "perks");
 
 	const [itemsShaking, setItemsShaking] = useState<string[]>([]);
 
 	const [processingChange, setProcessingChange] = useState<boolean>(false);
-	const [cart, setCart] = useState<CartItems[]>(cartData);
-	const [salesTax, setSalesTax] = useState<number>(0);
+	// const [salesTax, setSalesTax] = useState<number>(0);
 	const [subtotalCost, setSubtotalCost] = useState<number>(0);
-	const [totalCost, setTotalCost] = useState<number>(0);
 
 	const [isGift, setIsGift] = useState(false);
 	const [giftRecipient, setGiftRecipient] = useState("");
@@ -85,60 +93,61 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 		) && verification.years < (STORE_CUSTOM_MIN_AGE[userCountry as keyof typeof STORE_CUSTOM_MIN_AGE] ?? 18)
 	);
 
-	useEffect(() => {
-		const cartTotal = cart.reduce(
-			(acc: number, item: CartItems) =>
-				acc + (getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity,
-			0
-		);
-
-		setSubtotalCost(cartTotal);
-	}, []);
-
-	useEffect(() => {
-		try {
-			setProcessingChange(true);
-			axios({
-				url: "/api/store/cart/set",
-				method: "PUT",
-				data: { cartData: cart },
-			}).then(() => {
-				const cartTotal = cart.reduce(
-					(acc: number, item: CartItems) =>
-						acc + (getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity,
+	const subtotal =
+		!isValidating && cart.length >= 1
+			? cart.reduce(
+					(acc: number, item: ICartItem) =>
+						acc + ((getSelectedPriceValue(item, item.selectedPrice)?.value ?? 100) / 100) * item.quantity,
 					0
-				);
-				setSubtotalCost(cartTotal);
+			  )
+			: 0;
+	const salesTax = subtotal * (STORE_TAX_PERCENT / 100);
+	const total = subtotal + salesTax;
 
-				if (discountInput.length >= 1) {
-					recalculateDiscount();
-				} else {
-					setAppliedDiscount(appliedDiscount ?? cartTotal >= 20);
-					axios("/api/store/discount/get")
-						.then(({ data }) => {
-							setAppliedDiscount(true);
-							setDiscountData(data);
-						})
-						.catch(() => {
-							const rawSalesTax = cartTotal * 0.0675;
+	// useEffect(() => {
+	// 	try {
+	// 		setProcessingChange(true);
+	// 		axios({
+	// 			url: "/api/store/cart/set",
+	// 			method: "PUT",
+	// 			data: { cartData: cart },
+	// 		}).then(() => {
+	// 			const cartTotal = cart.reduce(
+	// 				(acc: number, item: CartItems) =>
+	// 					acc + (getSelectedPriceValue(item, item.selectedPrice).value / 100) * item.quantity,
+	// 				0
+	// 			);
+	// 			setSubtotalCost(cartTotal);
 
-							setThresholdDiscount(cartTotal >= 20 && cart[0].type !== "subscription");
-							setSalesTax(rawSalesTax);
-							setTotalCost(cartTotal + rawSalesTax);
-						});
-				}
-			});
-		} catch (e: any) {
-			if (e.response.status === 429) {
-				toast.error("You are doing that too fast! Input a number instead of incrementing it.", {
-					theme: "colored",
-					position: "top-center",
-				});
-			}
-		} finally {
-			setProcessingChange(false);
-		}
-	}, [cart]);
+	// 			if (discountInput.length >= 1) {
+	// 				recalculateDiscount();
+	// 			} else {
+	// 				setAppliedDiscount(appliedDiscount ?? cartTotal >= 20);
+	// 				axios("/api/store/discount/get")
+	// 					.then(({ data }) => {
+	// 						setAppliedDiscount(true);
+	// 						setDiscountData(data);
+	// 					})
+	// 					.catch(() => {
+	// 						const rawSalesTax = cartTotal * 0.0675;
+
+	// 						setThresholdDiscount(cartTotal >= 20 && cart[0].type !== "subscription");
+	// 						setSalesTax(rawSalesTax);
+	// 						setTotalCost(cartTotal + rawSalesTax);
+	// 					});
+	// 			}
+	// 		});
+	// 	} catch (e: any) {
+	// 		if (e.response.status === 429) {
+	// 			toast.error("You are doing that too fast! Input a number instead of incrementing it.", {
+	// 				theme: "colored",
+	// 				position: "top-center",
+	// 			});
+	// 		}
+	// 	} finally {
+	// 		setProcessingChange(false);
+	// 	}
+	// }, [cart]);
 
 	useEffect(() => {
 		if (discountError.length > 1) return setDiscountError("");
@@ -163,34 +172,11 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 		}
 	}, [country]);
 
-	const deleteItem = (index: number) => {
-		if (!processingChange) {
-			const newCart = [...cart];
-			newCart.splice(index, 1);
-			setCart(newCart);
-			if (newCart.length < 1) {
-				router.push("/store");
-			}
-		}
-	};
+	const deleteItem = (index: number) => {};
 
-	const updateQuantity = (index: number, quantity: number) => {
-		if (!processingChange) {
-			const newCart = [...cart];
-			newCart[index].quantity = quantity;
-			setCart(newCart);
-		}
-	};
+	const updateQuantity = (index: number, quantity: number) => {};
 
-	const changeInterval = (index: number, interval: "month" | "year") => {
-		if (!processingChange) {
-			const newCart: CartItems[] = [...cart];
-			newCart[index].selectedPrice = newCart[index].prices.filter(
-				(price) => price.interval?.period === interval
-			)[0].id;
-			setCart(newCart);
-		}
-	};
+	const changeInterval = (index: number, interval: "month" | "year") => {};
 
 	const removeDiscount = () => {
 		axios(`/api/store/discount/remove`)
@@ -263,68 +249,63 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 			.finally(() => setProcessingChange(false));
 	};
 
-	useMemo(() => {
-		const data = discountData;
-		if (!data) {
-			return;
-		}
-		const _salesTax = subtotalCost * 0.0675;
-		const total = subtotalCost + _salesTax - data.totalSavings;
+	// useMemo(() => {
+	// 	const data = discountData;
+	// 	if (!data) {
+	// 		return;
+	// 	}
+	// 	const _salesTax = subtotalCost * (STORE_TAX_PERCENT / 100);
+	// 	const total = subtotalCost + _salesTax - data.totalSavings;
 
-		setAppliedCode(data.code);
-		setDiscountInput(data.code);
-		setDiscountedItems(data.discountedItems);
-		setAppliedSavings(data.totalSavings ?? 0);
-		setSalesTax(_salesTax);
-		setTotalCost(total);
-		setThresholdDiscount(total >= 20 && cart[0].type !== "subscription");
-	}, [discountData, subtotalCost]);
+	// 	setAppliedCode(data.code);
+	// 	setDiscountInput(data.code);
+	// 	setDiscountedItems(data.discountedItems);
+	// 	setAppliedSavings(data.totalSavings ?? 0);
+	// 	// setSalesTax(_salesTax);
+	// 	// setTotalCost(total);
+	// 	setThresholdDiscount(total >= STORE_MINIMUM_PURCHASE_VALUE && cart[0].type !== "subscription");
+	// }, [discountData, subtotalCost]);
 
-	const addToCart = async (item: CartItems) => {
-		let toastMessage: string | undefined;
-		const typeToAdd = item.type;
-		const cartHasSubscription = cart.filter((i) => i.type === "subscription").length >= 1;
-		const cartHasSingle = cart.filter((i) => i.type === "single").length >= 1;
-
-		if (
-			typeToAdd === "single" &&
-			item.category === "lootbox" &&
-			!verification.verified &&
-			!requiresAgeVerification
-		) {
-			setOpenDialog(true);
-		}
-
-		if (typeToAdd === "subscription" && cartHasSubscription) {
-			toastMessage = "Only one subscription should be added your cart at a time.";
-		} else if (typeToAdd === "subscription" && cartHasSingle) {
-			toastMessage = "You cannot combine subscription and single-purchase products.";
-		} else if (typeToAdd == "single" && cartHasSubscription) {
-			toastMessage = "You cannot combine subscription and single-purchase products.";
-		}
-
-		if (toastMessage) {
-			return toast.info(toastMessage, {
-				position: "top-center",
-				theme: "colored",
-				hideProgressBar: true,
-				autoClose: 3000,
-			});
-		}
-
-		const alreadyExists = cart.findIndex((i) => i.id === item.id);
-		if (alreadyExists !== -1 && cart[alreadyExists].quantity < 100) {
-			let _cart = cart.slice();
-			_cart[alreadyExists].quantity += 1;
-			setCart(_cart);
-		} else if (alreadyExists === -1) {
-			setCart((i) => [...i, item]);
-		}
-		setProcessingChange(false);
+	const addToCart = async (item: any) => {
+		// let toastMessage: string | undefined;
+		// const typeToAdd = item.type;
+		// const cartHasSubscription = cart.filter((i) => i.type === "subscription").length >= 1;
+		// const cartHasSingle = cart.filter((i) => i.type === "single").length >= 1;
+		// if (
+		// 	typeToAdd === "single" &&
+		// 	item.category === "lootbox" &&
+		// 	!verification.verified &&
+		// 	!requiresAgeVerification
+		// ) {
+		// 	setOpenDialog(true);
+		// }
+		// if (typeToAdd === "subscription" && cartHasSubscription) {
+		// 	toastMessage = "Only one subscription should be added your cart at a time.";
+		// } else if (typeToAdd === "subscription" && cartHasSingle) {
+		// 	toastMessage = "You cannot combine subscription and single-purchase products.";
+		// } else if (typeToAdd == "single" && cartHasSubscription) {
+		// 	toastMessage = "You cannot combine subscription and single-purchase products.";
+		// }
+		// if (toastMessage) {
+		// 	return toast.info(toastMessage, {
+		// 		position: "top-center",
+		// 		theme: "colored",
+		// 		hideProgressBar: true,
+		// 		autoClose: 3000,
+		// 	});
+		// }
+		// const alreadyExists = cart.findIndex((i) => i.id === item.id);
+		// if (alreadyExists !== -1 && cart[alreadyExists].quantity < 100) {
+		// 	let _cart = cart.slice();
+		// 	_cart[alreadyExists].quantity += 1;
+		// 	setCart(_cart);
+		// } else if (alreadyExists === -1) {
+		// 	setCart((i) => [...i, item]);
+		// }
+		// setProcessingChange(false);
 	};
 
 	const addUpsellProduct = async (id: string) => {
-		console.log(cart.find((i) => i.id === id) && cart.find((i) => i.id === id)!.quantity + 1 > 100);
 		if (cart.find((i) => i.id === id) && cart.find((i) => i.id === id)!.quantity + 1 > 100) {
 			setItemsShaking((curr) => [...curr, id]);
 			return setTimeout(() => {
@@ -333,14 +314,15 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 		}
 		if (!processingChange) {
 			try {
-				setProcessingChange(true);
-				const { data: formatted }: { data: CartItems } = await axios(
+				// setProcessingChange(true);
+				const { data: formatted }: { data: ICartItem } = await axios(
 					`/api/store/product/find?id=${id}&action=format&to=cart-item`
 				);
 				if (requiresAgeVerification && formatted.category?.toLowerCase() === "lootbox") {
 					return setOpenDialog(true);
 				}
-				addToCart(formatted);
+				await mutate.addItem(formatted);
+				// setProcessingChange(false);
 			} catch (e) {
 				toast.error("We were unable to update your cart information. Please try again later.");
 			}
@@ -391,14 +373,14 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 										{cart.map((item, i) => (
 											<CartItem
 												key={item.id}
-												size="large"
 												index={i}
 												{...item}
-												updateQuantity={updateQuantity}
-												changeInterval={changeInterval}
-												deleteItem={deleteItem}
-												disabled={processingChange}
-												shouldShake={itemsShaking.includes(item.id)}
+												changeInterval={mutate.changeInterval}
+												setQuantity={mutate.setQty}
+												increaseQuantity={mutate.incrQty}
+												decreaseQuantity={mutate.decrQty}
+												deleteItem={mutate.delItem}
+												disabled={false}
 											/>
 										))}
 									</div>
@@ -420,13 +402,14 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 										{cart.map((item, i) => (
 											<CartItem
 												key={item.id}
-												size="large"
 												index={i}
 												{...item}
-												updateQuantity={updateQuantity}
-												changeInterval={changeInterval}
-												deleteItem={deleteItem}
-												disabled={processingChange}
+												changeInterval={mutate.changeInterval}
+												setQuantity={mutate.setQty}
+												increaseQuantity={mutate.incrQty}
+												decreaseQuantity={mutate.decrQty}
+												deleteItem={mutate.delItem}
+												disabled={false}
 											/>
 										))}
 									</div>
@@ -455,7 +438,10 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 													<>
 														$
 														{(
-															totalCost - (thresholdDiscount ? totalCost * 0.1 : 0)
+															total -
+															(thresholdDiscount
+																? total * (STORE_FLAT_DISCOUNT_PERCENTAGE / 100)
+																: 0)
 														).toFixed(2)}
 													</>
 												)}
@@ -603,7 +589,10 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 																	-$
 																	{(
 																		appliedSavings +
-																		(thresholdDiscount ? totalCost * 0.1 : 0)
+																		(thresholdDiscount
+																			? total *
+																			  (STORE_FLAT_DISCOUNT_PERCENTAGE / 100)
+																			: 0)
 																	).toFixed(2)}
 																</h3>
 															)}
@@ -644,7 +633,11 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 																			) : (
 																				<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
 																					-$
-																					{(totalCost * 0.1).toFixed(2)}
+																					{(
+																						total *
+																						(STORE_FLAT_DISCOUNT_PERCENTAGE /
+																							100)
+																					).toFixed(2)}
 																				</p>
 																			)}
 																		</li>
@@ -670,7 +663,11 @@ export default function Cart({ cartData, upsells, country, user, verification }:
 									<div className="h-5 w-16 animate-[pulse_0.5s_ease-in-out_infinite] rounded bg-dank-400"></div>
 								) : (
 									<Title size="small">
-										${(totalCost - (thresholdDiscount ? totalCost * 0.1 : 0)).toFixed(2)}
+										$
+										{(
+											total -
+											(thresholdDiscount ? total * (STORE_FLAT_DISCOUNT_PERCENTAGE / 100) : 0)
+										).toFixed(2)}
 									</Title>
 								)}
 							</div>
@@ -705,7 +702,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
 		}
 
 		const cart = await ctx.req.session.get("cart");
-		if (!cart)
+		if (!cart || cart.length < 1)
 			return {
 				redirect: {
 					destination: `/store`,
@@ -728,6 +725,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
 		const itemCounts: { [key: string]: number } = {};
 		for (let purchase of samplePurchaseSet) {
 			for (let item of purchase.items) {
+				if (item.type === "recurring") break;
 				itemCounts[item.id!] = (itemCounts[item.id!] ?? 0) + item.quantity;
 			}
 		}

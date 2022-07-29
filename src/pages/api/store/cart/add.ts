@@ -1,5 +1,5 @@
 import { NextApiResponse } from "next";
-import { accessCart } from "src/util/cart";
+import CartController from "src/util/cart/controller";
 import { NextIronRequest, withSession } from "../../../../util/session";
 
 const handler = async (req: NextIronRequest, res: NextApiResponse) => {
@@ -19,7 +19,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 	}
 
 	try {
-		const controller = accessCart(req.session.get("cart"));
+		const controller = new CartController(req.session.get("cart"));
 
 		const idToCreate = req.body.id;
 		if (idToCreate) {

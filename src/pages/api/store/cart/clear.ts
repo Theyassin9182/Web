@@ -1,5 +1,4 @@
 import { NextApiResponse } from "next";
-import { accessCart } from "src/util/cart";
 import { NextIronRequest, withSession } from "../../../../util/session";
 
 const handler = async (req: NextIronRequest, res: NextApiResponse) => {

@@ -1,5 +1,5 @@
 import { NextApiResponse } from "next";
-import { accessCart } from "src/util/cart";
+import CartController from "src/util/cart/controller";
 import { NextIronRequest, withSession } from "../../../../util/session";
 
 const handler = async (req: NextIronRequest, res: NextApiResponse) => {
@@ -9,7 +9,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		});
 	}
 
-	const controller = accessCart(req.session.get("cart"));
+	const controller = new CartController(req.session.get("cart"));
 	const user = req.session.get("user");
 	if (!user) {
 		return res.status(401).json({ error: "You are not logged in." });

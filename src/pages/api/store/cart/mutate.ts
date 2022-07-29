@@ -1,6 +1,5 @@
 import { NextApiResponse } from "next";
-import { CartItem } from "src/pages/store";
-import { accessCart } from "src/util/cart";
+import CartController from "src/util/cart/controller";
 import { NextIronRequest, withSession } from "../../../../util/session";
 
 export const PossibleMutations = ["delete", "update"] as const;
@@ -31,7 +30,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		return res.status(400).json({ message: "Invalid or no body." });
 	}
 
-	const controller = accessCart(req.session.get("cart"));
+	const controller = new CartController(req.session.get("cart"));
 	const productId = req.query.id?.toString();
 	if (!controller.has(productId)) {
 		return res.status(400).json({

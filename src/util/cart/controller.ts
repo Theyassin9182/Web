@@ -2,21 +2,13 @@ import { CartItem } from "src/pages/store";
 import Stripe from "stripe";
 import mutations from "./mutations";
 
-let cachedController: CartController;
 export type CartMap = Map<string, CartItem>;
-
-export function accessCart(cart: CartMap | string = new Map<string, CartItem>()) {
-	if (cachedController) return cachedController;
-	const controller = new CartController(cart);
-	cachedController = controller;
-	return controller;
-}
 
 export default class CartController {
 	private items: CartMap;
 	public mutations: typeof mutations;
 
-	constructor(cart: CartMap | string = new Map()) {
+	constructor(cart: CartMap | string = new Map<string, CartItem>()) {
 		this.mutations = mutations;
 		this.items =
 			cart instanceof Map

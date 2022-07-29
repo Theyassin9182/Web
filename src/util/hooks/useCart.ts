@@ -1,7 +1,7 @@
 import useSWR, { useSWRConfig } from "swr";
 import axios, { AxiosError } from "axios";
 import { CartItem } from "src/pages/store";
-import CartController, { CartMap } from "../cart";
+import CartController, { CartMap } from "../cart/controller";
 import Mutations from "../cart/mutations";
 
 export const fetcher = (url: string) =>
@@ -25,6 +25,8 @@ interface useCartImpl {
 	isValidating?: boolean;
 	isLoading?: boolean;
 }
+
+// console.log(window ? "exists" : "doesn't exist");
 
 export const useCart = (): useCartImpl => {
 	const { data, error, mutate, isValidating } = useSWR<CartMap>("/api/store/cart/get", fetcher, {
