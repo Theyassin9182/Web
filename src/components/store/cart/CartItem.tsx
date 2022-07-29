@@ -8,7 +8,7 @@ import { toTitleCase } from "src/util/string";
 
 interface Props extends CartItems {
 	index: number;
-	size: "small" | "large";
+	size?: "small" | "large";
 	changeInterval: any;
 	setQuantity: (id: string, number: number) => void;
 	increaseQuantity: (id: string, number?: number) => void;
