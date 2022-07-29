@@ -14,8 +14,8 @@ interface Props extends CartItems {
 	increaseQuantity: (id: string, number?: number) => void;
 	decreaseQuantity: (id: string, number?: number) => void;
 	deleteItem: (id: string) => void;
-	disabled: boolean;
 	shouldShake?: boolean;
+	disabled: boolean;
 }
 
 export const billingPeriod = {
@@ -39,8 +39,8 @@ export default function CartItem({
 	increaseQuantity,
 	decreaseQuantity,
 	deleteItem,
-	disabled,
 	shouldShake = false,
+	disabled,
 }: Props) {
 	const [shake, setShake] = useState(shouldShake);
 	const price = () => {
@@ -101,7 +101,9 @@ export default function CartItem({
 					icon="bx:bx-trash"
 					height={size === "small" ? "15" : "20"}
 					className="mr-2.5 inline w-4 cursor-pointer text-gray-800 transition-colors hover:!text-red-400 dark:text-gray-200 sm:hidden sm:w-auto"
-					onClick={() => deleteItem(id)}
+					onClick={() => {
+						deleteItem(id);
+					}}
 				/>
 			</div>
 			<div

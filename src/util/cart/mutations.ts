@@ -110,8 +110,13 @@ export default class Mutations {
 		});
 	}
 
-	async addItem(product: CartItem) {
-		await this.sendMutation("add", product);
+	async addItem(product: CartItem, isUpsell: boolean = false) {
+		if (isUpsell && this.controller.has(product.id)) {
+			return await this.sendMutation("update", product.id, "incrqty", {
+				quantity: 1,
+			});
+		}
+		return await this.sendMutation("add", product);
 	}
 
 	async delItem(id: string) {

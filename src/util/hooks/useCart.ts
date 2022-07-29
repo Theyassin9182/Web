@@ -3,6 +3,8 @@ import axios, { AxiosError } from "axios";
 import { CartItem } from "src/pages/store";
 import CartController, { CartMap } from "../cart/controller";
 import Mutations from "../cart/mutations";
+import Discounts from "../cart/discounts";
+import { useDiscount } from "./useDiscount";
 
 export const fetcher = (url: string) =>
 	axios(url)
@@ -25,8 +27,6 @@ interface useCartImpl {
 	isValidating?: boolean;
 	isLoading?: boolean;
 }
-
-// console.log(window ? "exists" : "doesn't exist");
 
 export const useCart = (): useCartImpl => {
 	const { data, error, mutate, isValidating } = useSWR<CartMap>("/api/store/cart/get", fetcher, {
