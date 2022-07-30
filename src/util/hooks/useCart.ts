@@ -18,7 +18,7 @@ export const fetcher = (url: string) =>
 			res.info = error.response?.data.message;
 			res.status = error.response?.status;
 		});
-interface useCartImpl {
+export interface useCartImpl {
 	cart: CartItem[];
 	data: any[];
 	error: any;

@@ -10,7 +10,7 @@ export interface AppliedDiscount {
 	isPercent: boolean;
 }
 
-interface useDiscountImpl {
+export interface useDiscountImpl {
 	discount: AppliedDiscount;
 	error: any;
 	mutate: Discounts;

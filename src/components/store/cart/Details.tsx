@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Title } from "src/components/Title";
 import Button from "src/components/ui/Button";
 import Tooltip from "src/components/ui/Tooltip";
@@ -11,6 +11,7 @@ import { useDiscount } from "src/util/hooks/useDiscount";
 import { getSelectedPriceValue } from "src/util/store";
 import Input from "../Input";
 import { Icon as Iconify } from "@iconify/react";
+import { StoreContext } from "src/contexts/StoreProvider";
 
 interface Props {
 	userId: string;
@@ -21,18 +22,19 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 	const router = useRouter();
 	const { cart } = useCart();
 	const { discount, error, mutate, isValidating } = useDiscount();
+	const context = useContext(StoreContext);
 
-	const [isGift, setIsGift] = useState(false);
-	const [giftRecipient, setGiftRecipient] = useState("");
 	const [validGiftRecipient, setValidGiftRecipient] = useState(true);
-
 	const [discountInput, setDiscountInput] = useState(discount.code);
 
 	useEffect(() => {
-		setValidGiftRecipient(giftRecipient !== "" && validateGiftRecipient(giftRecipient));
-	}, [giftRecipient]);
+		setValidGiftRecipient(
+			context?.config.giftRecipient !== "" && validateGiftRecipient(context?.config.giftRecipient ?? "")
+		);
+	}, [context?.config.giftRecipient]);
 
-	const validateGiftRecipient = (recipient: string) => /^\d{16,21}$/.test(recipient) && giftRecipient !== userId;
+	const validateGiftRecipient = (recipient: string) =>
+		/^\d{16,21}$/.test(recipient) && context?.config.giftRecipient !== userId;
 	const subtotal =
 		!isValidating && cart.length >= 1
 			? cart.reduce(
@@ -44,24 +46,6 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 	const salesTax = subtotal * (STORE_TAX_PERCENT / 100);
 	const total = subtotal + salesTax - discount.totalSavings;
 	const meetsThreshold = total >= STORE_MINIMUM_DISCOUNT_VALUE && acceptDiscounts;
-
-	const goToCheckout = () => {
-		// Global config, probably context? need something with providers
-		// axios({
-		// 	url: "/api/store/config/set",
-		// 	method: "POST",
-		// 	data: {
-		// 		isGift,
-		// 		giftFor: giftRecipient,
-		// 	},
-		// })
-		// 	.then(() => {
-		// 		return router.push("/store/checkout");
-		// 	})
-		// 	.catch((e) => {
-		// 		console.error(e);
-		// 	});
-	};
 
 	return (
 		<div className="h-max w-full rounded-lg bg-light-500 px-8 py-7 dark:bg-dark-200 md:mr-10 lg:my-5 lg:mr-10">
@@ -79,28 +63,32 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 						<div className="mr-4 flex cursor-pointer select-none text-sm">
 							<p
 								className={clsx(
-									!isGift
+									!context?.config.isGift
 										? "bg-dank-300 text-white"
 										: "bg-black/10 text-neutral-600 dark:bg-black/30 dark:text-neutral-400",
 									"rounded-l-md border border-transparent px-3 py-1"
 								)}
-								onClick={() => setIsGift(false)}
+								onClick={() => context?.setConfig((config) => ({ ...config, isGift: false }))}
 							>
 								Myself
 							</p>
 							<p
 								className={clsx(
-									isGift
+									context?.config.isGift
 										? "bg-dank-300 text-white"
 										: "bg-black/10 text-neutral-600 dark:bg-black/30 dark:text-neutral-400",
 									"rounded-r-md border border-transparent px-3 py-1"
 								)}
-								onClick={() => setIsGift(true)}
+								onClick={() => {
+									let config = context?.config;
+									config = { ...config, isGift: true };
+									context?.setConfig({ ...config });
+								}}
 							>
 								Someone else
 							</p>
 						</div>
-						{isGift && (
+						{context?.config.isGift && (
 							<div className="mt-2">
 								<Input
 									width="w-full max-w-xs"
@@ -109,18 +97,22 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 									className={clsx(
 										"!py-1 dark:placeholder:text-neutral-500",
 										!validGiftRecipient &&
-											giftRecipient !== "" &&
+											context?.config.giftRecipient !== "" &&
 											"!border-red-500 dark:!border-red-500"
 									)}
-									value={giftRecipient}
+									value={context?.config.giftRecipient}
 									onChange={(e: any) => {
 										if (/^\d+$/.test(e.target.value) || e.target.value === "") {
-											setGiftRecipient(e.target.value);
+											let config = context?.config;
+											config = { ...config, giftRecipient: e.target.value };
+											context?.setConfig(config);
 										}
 									}}
 									onBlur={(e) => {
 										if (validateGiftRecipient(e.target.value)) {
-											setGiftRecipient(e.target.value);
+											let config = context?.config;
+											config = { ...config, giftRecipient: e.target.value };
+											context?.setConfig(config);
 										}
 									}}
 								/>
@@ -249,8 +241,8 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 			<Button
 				size="medium"
 				className="mt-3 w-full"
-				onClick={goToCheckout}
-				disabled={isGift && !validGiftRecipient}
+				onClick={() => router.push("/store/checkout")}
+				disabled={context?.config.isGift && !validGiftRecipient}
 			>
 				Continue to Checkout
 			</Button>

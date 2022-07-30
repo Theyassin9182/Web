@@ -1,6 +1,6 @@
 import axios from "axios";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Title } from "src/components/Title";
 import Container from "src/components/ui/Container";
 import { PageProps, UserAge, UserData } from "src/types";
@@ -35,6 +35,7 @@ import { format } from "date-fns";
 import { useCart } from "src/util/hooks/useCart";
 import { useDiscount } from "src/util/hooks/useDiscount";
 import CartDetails from "src/components/store/cart/Details";
+import StoreProvider, { StoreContext } from "src/contexts/StoreProvider";
 
 interface Props extends PageProps {
 	cartData: ICartItem[];
@@ -60,6 +61,7 @@ export default function Cart({ upsells, country, user, verification }: Props) {
 
 	const { discount } = useDiscount();
 	const { cart, mutate, isValidating } = useCart();
+	const context = useContext(StoreContext);
 
 	const marketingBoxView = useRef<MarketBoxVariants>(Math.random() >= 0.5 ? "gifting" : "perks");
 
@@ -197,7 +199,7 @@ export default function Cart({ upsells, country, user, verification }: Props) {
 										<p>
 											<Iconify icon="ant-design:info-circle-outlined" width={24} />
 										</p>
-										{isGift ? (
+										{context?.config?.isGift ? (
 											<p className="max-w-[90%] text-sm">
 												The selected subscription is being purchased as a gift. Gifted
 												subscriptions are not recurring products, therefore you will not be
@@ -217,7 +219,7 @@ export default function Cart({ upsells, country, user, verification }: Props) {
 													(meetsThreshold
 														? total * (STORE_FLAT_DISCOUNT_PERCENTAGE / 100)
 														: 0)
-												).toFixed(2)}
+												).toFixed(2)}{" "}
 												on{" "}
 												{format(
 													new Date(
@@ -243,7 +245,10 @@ export default function Cart({ upsells, country, user, verification }: Props) {
 					) : (
 						<MarketingBox variant={marketingBoxView.current} />
 					)}
-					<CartDetails userId={user!.id} acceptDiscounts={!isValidating && cart[0].type !== "subscription"} />
+					<CartDetails
+						userId={user!.id}
+						acceptDiscounts={!isValidating && cart[0] && cart[0].type !== "subscription"}
+					/>
 				</div>
 			</div>
 		</Container>
