@@ -32,8 +32,6 @@ export default function ShoppingCart({ hovered }: Props) {
 	// Thanks badosz
 	let timeoutEnter: NodeJS.Timeout;
 
-	const changeInterval = (index: number, interval: "month" | "year") => {};
-
 	const buttonEnter = () => {
 		timeoutEnter = setTimeout(() => {
 			setShowCart(true);
@@ -53,7 +51,13 @@ export default function ShoppingCart({ hovered }: Props) {
 
 	return (
 		<div onMouseEnter={buttonEnter} onMouseLeave={buttonLeave}>
-			<Button size="small" className="w-full sm:w-auto" variant="dark" onClick={() => router.push(`/store/cart`)}>
+			<Button
+				size="small"
+				className="w-full sm:w-auto"
+				variant="dark"
+				onClick={() => router.push(`/store/cart`)}
+				onMouseEnter={() => router.prefetch("/store/cart")}
+			>
 				<div className="flex items-center space-x-2 py-1">
 					<Iconify icon="akar-icons:cart" className="text-black dark:text-white" height={20} />
 					<p>
