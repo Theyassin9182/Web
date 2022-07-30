@@ -21,17 +21,22 @@ interface Props {
 export default function CartDetails({ userId, acceptDiscounts }: Props) {
 	const router = useRouter();
 	const { cart } = useCart();
-	const { discount, error, mutate, isValidating } = useDiscount();
+	const { discount, mutate, isValidating } = useDiscount();
 	const context = useContext(StoreContext);
 
 	const [validGiftRecipient, setValidGiftRecipient] = useState(true);
 	const [discountInput, setDiscountInput] = useState(discount.code);
+	const [error, setError] = useState("");
 
 	useEffect(() => {
 		setValidGiftRecipient(
 			context?.config.giftRecipient !== "" && validateGiftRecipient(context?.config.giftRecipient ?? "")
 		);
 	}, [context?.config.giftRecipient]);
+
+	useEffect(() => {
+		if (error.length >= 1) setError("");
+	}, [discountInput]);
 
 	const validateGiftRecipient = (recipient: string) =>
 		/^\d{16,21}$/.test(recipient) && context?.config.giftRecipient !== userId;
@@ -149,7 +154,13 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 												onClick={
 													discount.code.length >= 1
 														? () => mutate.clear()
-														: () => mutate.apply(discountInput)
+														: async () => {
+																try {
+																	await mutate.apply(discountInput);
+																} catch (e) {
+																	setError(e as string);
+																}
+														  }
 												}
 												disabled={discountInput?.length < 1}
 											>
