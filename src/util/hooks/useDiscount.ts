@@ -8,6 +8,7 @@ export interface AppliedDiscount {
 	discountedItems: DiscountItem[];
 	totalSavings: number;
 	isPercent: boolean;
+	discountAmount: number;
 }
 
 export interface useDiscountImpl {
@@ -31,7 +32,6 @@ const fetcher = (url: string) =>
 			res.status = error.response?.status;
 		});
 
-const doNoRetry = [500, 404, 410, 400, 403, 406];
 export const useDiscount = (): useDiscountImpl => {
 	const { data, error, mutate, isValidating } = useSWR<AppliedDiscount>("/api/store/discount/get", fetcher, {
 		revalidateOnFocus: true,
@@ -48,6 +48,7 @@ export const useDiscount = (): useDiscountImpl => {
 			discountedItems: [],
 			totalSavings: 0,
 			isPercent: false,
+			discountAmount: 1,
 		},
 		error,
 		mutate: new Discounts(mutate),

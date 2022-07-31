@@ -1,30 +1,25 @@
 import { NextApiResponse } from "next";
 import { CartItem } from "src/pages/store";
 import { DiscountItem } from "src/pages/store/checkout";
+import CartController from "src/util/cart/controller";
 import { calculateDiscount } from "src/util/discounts";
 import { getSelectedPriceValue } from "src/util/store";
 import { stripeConnect } from "src/util/stripe";
 import Stripe from "stripe";
 import { NextIronRequest, withSession } from "../../../../util/session";
+import { AppliedDiscount } from "./apply";
 
 const handler = async (req: NextIronRequest, res: NextApiResponse) => {
-	if (req.method?.toLowerCase() !== "post") {
-		return res.status(405).json({
-			error: `Method '${req.method?.toUpperCase()}' cannot be used on this endpoint.`,
-		});
-	}
-
 	const user = req.session.get("user");
 	if (!user) {
 		return res.status(401).json({ error: "You are not logged in." });
 	}
 
-	if (!req.body) {
-		return res.status(400).json({ error: "No body" });
-	}
-	const { code, cart }: { code: string; cart: CartItem[] } = req.body;
+	const controller = new CartController(req.session.get("cart"));
+	const cart = controller.iterable();
+	const code = (req.session.get("discountCode") as AppliedDiscount).code;
 	if (!code || !cart) {
-		return res.status(400).json({ error: "Missing body elements." });
+		return res.status(400).json({ error: "No items in your cart or no active discount code to recalculate" });
 	}
 
 	const stripe = stripeConnect();

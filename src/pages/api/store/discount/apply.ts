@@ -13,6 +13,7 @@ export interface AppliedDiscount {
 	discountedItems: DiscountItem[];
 	totalSavings: number;
 	isPercent: boolean;
+	discountAmount: number;
 }
 
 const handler = async (req: NextIronRequest, res: NextApiResponse) => {
@@ -128,10 +129,10 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		totalSavings = discountAmount;
 	}
 
-	req.session.set("discountCode", { code, discountedItems, totalSavings, isPercent });
+	req.session.set("discountCode", { code, discountedItems, totalSavings, isPercent, discountAmount });
 	await req.session.save();
 
-	return res.status(200).json({ code, discountedItems, totalSavings, isPercent });
+	return res.status(200).json({ code, discountedItems, totalSavings, isPercent, discountAmount });
 };
 
 export default withSession(handler);

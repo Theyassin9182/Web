@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useRouter } from "next/router";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Title } from "src/components/Title";
 import Button from "src/components/ui/Button";
 import Tooltip from "src/components/ui/Tooltip";
@@ -12,6 +12,7 @@ import { getSelectedPriceValue } from "src/util/store";
 import Input from "../Input";
 import { Icon as Iconify } from "@iconify/react";
 import { StoreContext } from "src/contexts/StoreProvider";
+import axios from "axios";
 
 interface Props {
 	userId: string;
@@ -24,6 +25,8 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 	const { discount, mutate, isValidating } = useDiscount();
 	const context = useContext(StoreContext);
 
+	const previousCart = useRef(cart);
+	const [processing, setProcessing] = useState(false);
 	const [validGiftRecipient, setValidGiftRecipient] = useState(true);
 	const [discountInput, setDiscountInput] = useState(discount.code);
 	const [error, setError] = useState("");
@@ -33,6 +36,24 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 			context?.config.giftRecipient !== "" && validateGiftRecipient(context?.config.giftRecipient ?? "")
 		);
 	}, [context?.config.giftRecipient]);
+
+	useEffect(() => {
+		(async () => {
+			if (!cart || cart.length < 1) return;
+			const diff = cart.filter((x) => !previousCart.current.includes(x));
+			previousCart.current = cart;
+			const discountCode = context?.discountContext.discount.code;
+			if (discountCode && discountCode.length >= 1 && diff.length >= 1) {
+				setProcessing(true);
+				await mutate.recalculate(discount, previousCart.current);
+				setProcessing(false);
+			}
+		})();
+	}, [cart]);
+
+	// useEffect(() => {
+	// 	if (!isValidating && processing) setProcessing(false);
+	// }, [isValidating, processing]);
 
 	useEffect(() => {
 		if (error.length >= 1) setError("");
@@ -177,6 +198,7 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 										<div>
 											<div className="flex items-center justify-between">
 												<h3 className="font-montserrat text-base font-bold">Discount</h3>
+
 												<h3 className="font-montserrat text-base font-bold text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
 													-$
 													{(

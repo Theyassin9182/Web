@@ -1,14 +1,17 @@
 import axios, { AxiosError } from "axios";
 import { CartItem } from "src/pages/store";
 import { KeyedMutator } from "swr";
+import { calculateDiscount } from "../discounts";
 import { AppliedDiscount } from "../hooks/useDiscount";
 
 export default class Discounts {
 	private mutator: KeyedMutator<AppliedDiscount>;
+	private lastRecalculate: number;
 
 	constructor(mutator: KeyedMutator<AppliedDiscount>) {
 		this.mutator = mutator;
 		this.apply = this.apply.bind(this);
+		this.lastRecalculate = new Date().getTime();
 	}
 
 	/**
@@ -58,16 +61,40 @@ export default class Discounts {
 		}
 	}
 
-	async recalculate(code: string, cart: CartItem[]) {
-		await this.mutator(async () => {
-			try {
-				let { data } = await axios({
-					method: "POST",
-					url: `/api/store/discount/recalculate`,
-					data: { code, cart },
-				});
-				return data;
-			} catch {}
-		});
+	async recalculate(currDiscount: AppliedDiscount, cart: CartItem[]) {
+		let items = currDiscount.discountedItems.filter((di) => cart.filter((ci) => di.id === ci.id));
+		let totalSavings = 0;
+		let discountedItems = [];
+		for (let item of items) {
+			const product = await calculateDiscount(
+				cart.find((ci) => ci.id === item.id)!,
+				currDiscount.discountAmount,
+				currDiscount.isPercent
+			);
+			discountedItems.push(product);
+			totalSavings += product.savings;
+		}
+		let expectedOutput: AppliedDiscount = {
+			code: currDiscount.code,
+			discountedItems,
+			isPercent: currDiscount.isPercent,
+			totalSavings,
+			discountAmount: currDiscount.discountAmount,
+		};
+		console.log(expectedOutput);
+		await this.mutator(
+			async () => {
+				try {
+					let { data } = await axios(`/api/store/discount/apply?code=${currDiscount.code}`);
+					return data;
+				} catch {}
+			},
+			{
+				optimisticData: expectedOutput,
+				rollbackOnError: true,
+				populateCache: true,
+				revalidate: false,
+			}
+		);
 	}
 }
