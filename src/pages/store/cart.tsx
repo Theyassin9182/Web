@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 import { dbConnect } from "src/util/mongodb";
 import { PurchaseRecord } from "../api/store/checkout/finalize/paypal";
 import { stripeConnect } from "src/util/stripe";
-import { getSelectedPriceValue } from "src/util/store";
+import { getSelectedPriceValue } from "src/util/store/index";
 import {
 	STORE_BLOCKED_COUNTRIES,
 	STORE_CUSTOM_MIN_AGE,

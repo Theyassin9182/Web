@@ -4,7 +4,7 @@ import { Title } from "../Title";
 import Button from "../ui/Button";
 import { Icon as Iconify } from "@iconify/react";
 import { useCart } from "src/util/hooks/useCart";
-import { getSelectedPriceValue } from "src/util/store";
+import { getSelectedPriceValue } from "src/util/store/index";
 import { CartItem as ICartItem } from "src/pages/store";
 import CartItem from "./cart/CartItem";
 

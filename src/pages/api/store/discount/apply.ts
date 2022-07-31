@@ -3,7 +3,7 @@ import { CartItem } from "src/pages/store";
 import { DiscountItem } from "src/pages/store/checkout";
 import CartController from "src/util/cart/controller";
 import { calculateDiscount } from "src/util/discounts";
-import { getSelectedPriceValue } from "src/util/store";
+import { getSelectedPriceValue } from "src/util/store/index";
 import { stripeConnect } from "src/util/stripe";
 import Stripe from "stripe";
 import { NextIronRequest, withSession } from "../../../../util/session";

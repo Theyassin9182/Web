@@ -8,7 +8,7 @@ import { STORE_FLAT_DISCOUNT_PERCENTAGE, STORE_MINIMUM_DISCOUNT_VALUE, STORE_TAX
 import { CartItem } from "src/pages/store";
 import { useCart } from "src/util/hooks/useCart";
 import { useDiscount } from "src/util/hooks/useDiscount";
-import { getSelectedPriceValue } from "src/util/store";
+import { getSelectedPriceValue } from "src/util/store/index";
 import Input from "../Input";
 import { Icon as Iconify } from "@iconify/react";
 import { StoreContext } from "src/contexts/StoreProvider";
@@ -26,7 +26,6 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 	const context = useContext(StoreContext);
 
 	const previousCart = useRef(cart);
-	const [processing, setProcessing] = useState(false);
 	const [validGiftRecipient, setValidGiftRecipient] = useState(true);
 	const [discountInput, setDiscountInput] = useState(discount.code);
 	const [error, setError] = useState("");
@@ -44,16 +43,10 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 			previousCart.current = cart;
 			const discountCode = context?.discountContext.discount.code;
 			if (discountCode && discountCode.length >= 1 && diff.length >= 1) {
-				setProcessing(true);
 				await mutate.recalculate(discount, previousCart.current);
-				setProcessing(false);
 			}
 		})();
 	}, [cart]);
-
-	// useEffect(() => {
-	// 	if (!isValidating && processing) setProcessing(false);
-	// }, [isValidating, processing]);
 
 	useEffect(() => {
 		if (error.length >= 1) setError("");

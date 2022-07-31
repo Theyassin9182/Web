@@ -7,10 +7,9 @@ import {
 	StripeCardNumberElementChangeEvent,
 } from "@stripe/stripe-js";
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Title } from "src/components/Title";
 import { CartItem } from "src/pages/store";
-import { DiscountItem } from "src/pages/store/checkout";
 import Input from "../Input";
 import PaymentOption from "./PaymentOption";
 import router from "next/router";
@@ -25,22 +24,13 @@ import clsx from "clsx";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import Image from "next/image";
-import { getSelectedPriceValue } from "src/util/store";
-
-interface Props {
-	clientSecret: string;
-	invoiceId: string;
-	userId: string;
-	userEmail: string;
-	itemsTotal: string;
-	subtotalCost: string;
-	cart: CartItem[];
-	gift: {
-		isGift: boolean;
-		giftFor: string;
-	};
-}
-
+import { getSelectedPriceValue } from "src/util/store/index";
+import { useCart } from "src/util/hooks/useCart";
+import { useDiscount } from "src/util/hooks/useDiscount";
+import { StoreContext } from "src/contexts/StoreProvider";
+import { STORE_MINIMUM_DISCOUNT_VALUE, STORE_TAX_PERCENT } from "src/constants";
+import { PageProps } from "src/types";
+import { CheckoutContext } from "src/contexts/CheckoutProvider";
 export interface Card {
 	brand: string;
 	type: string;
@@ -60,21 +50,14 @@ export interface CardData {
 const StripeInputBaseStyles =
 	"mt-1 px-3 py-2 border bg-white border-neutral-300 dark:border-neutral-700 dark:bg-black/30 rounded-md focus:border-dank-300";
 
-export default function CheckoutForm({
-	clientSecret,
-	invoiceId,
-	userId,
-	userEmail,
-	itemsTotal,
-	subtotalCost,
-	gift,
-	cart,
-}: Props) {
-	const _invoiceId = useRef(invoiceId);
-	const _clientSecret = useRef(clientSecret);
+export default function CheckoutForm({ user }: PageProps) {
+	const { cart, isValidating } = useCart();
+	const { discount, isValidating: discountIsValidating } = useDiscount();
+	const storeContext = useContext(StoreContext);
+	const checkoutContext = useContext(CheckoutContext);
+
 	const successfulCheckout = useRef(false);
 
-	const [totalCost, setTotalCost] = useState<string>("0.00");
 	const [processingPayment, setProcessingPayment] = useState(false);
 	const [selectedPaymentOption, setSelectedPaymentOption] = useState<
 		"Card" | "PayPal" | "ApplePay" | "GooglePay" | "MicrosoftPay"
@@ -97,35 +80,23 @@ export default function CheckoutForm({
 	const [cardCvcInput, setCardCvcInput] = useState<StripeCardCvcElementChangeEvent>();
 
 	const [saveCardAsDefault, setSaveCardAsDefault] = useState(false);
-
-	const [thresholdDiscount, setThresholdDiscount] = useState(
-		parseFloat(subtotalCost) >= 20 && cart[0].type !== "subscription"
-	);
-	const [appliedDiscountCode, setAppliedDiscountCode] = useState("");
-	const [discountedItems, setDiscountedItems] = useState<DiscountItem[]>([]);
-	const [appliedSavings, setAppliedSavings] = useState(0);
-	const [appliedDiscount, setAppliedDiscount] = useState(false);
-
-	const [receiptEmail, setReceiptEmail] = useState(userEmail);
-
+	const [receiptEmail, setReceiptEmail] = useState(user?.email);
 	const [canCheckout, setCanCheckout] = useState(false);
 
+	const subtotal =
+		!isValidating && cart.length >= 1
+			? cart.reduce(
+					(acc: number, item: CartItem) =>
+						acc + ((getSelectedPriceValue(item, item.selectedPrice)?.value ?? 100) / 100) * item.quantity,
+					0
+			  )
+			: 0;
+	const salesTax = subtotal * (STORE_TAX_PERCENT / 100);
+	const total = subtotal + salesTax - discount.totalSavings;
+	const meetsThreshold = total >= STORE_MINIMUM_DISCOUNT_VALUE && cart[0].type !== "subscription";
+
 	useEffect(() => {
-		axios("/api/store/discount/get")
-			.then(({ data }) => {
-				if (!data) return setAppliedDiscount(false);
-
-				const { code, discountedItems, totalSavings } = data;
-				if (!code || !discountedItems || !totalSavings) return;
-
-				setAppliedDiscountCode(code);
-				setDiscountedItems(discountedItems);
-				setAppliedSavings(totalSavings);
-				setAppliedDiscount(true);
-			})
-			.catch(() => {});
-
-		axios(`/api/customers/${userId}?sensitive=true`)
+		axios(`/api/customers/${user?.id}?sensitive=true`)
 			.then(({ data }) => {
 				if (data.cards.default) {
 					setDefaultPaymentMethod(data.cards.default);
@@ -146,28 +117,20 @@ export default function CheckoutForm({
 	}, []);
 
 	useEffect(() => {
-		_invoiceId.current = invoiceId;
-	}, [invoiceId]);
-
-	useEffect(() => {
-		_clientSecret.current = clientSecret;
-	}, [clientSecret]);
-
-	useEffect(() => {
 		setupIntegratedWallet();
-	}, [stripe, totalCost]);
+	}, [stripe]);
 
-	useEffect(() => {
-		const numSubCost = parseFloat(subtotalCost);
-		const totalAfterSavings = numSubCost - appliedSavings;
-		setThresholdDiscount(totalAfterSavings >= 20 && cart[0].type !== "subscription");
-		setTotalCost(
-			(
-				totalAfterSavings -
-				(totalAfterSavings >= 20 && cart[0].type !== "subscription" ? totalAfterSavings * 0.1 : 0)
-			).toFixed(2)
-		);
-	}, [subtotalCost, appliedSavings]);
+	// useEffect(() => {
+	// 	const numSubCost = parseFloat(subtotalCost);
+	// 	const totalAfterSavings = numSubCost - appliedSavings;
+	// 	setThresholdDiscount(totalAfterSavings >= 20 && cart[0].type !== "subscription");
+	// 	setTotalCost(
+	// 		(
+	// 			totalAfterSavings -
+	// 			(totalAfterSavings >= 20 && cart[0].type !== "subscription" ? totalAfterSavings * 0.1 : 0)
+	// 		).toFixed(2)
+	// 	);
+	// }, [subtotalCost, discount.totalSavings]);
 
 	useEffect(() => {
 		if (
@@ -187,20 +150,20 @@ export default function CheckoutForm({
 
 	const cancelInvoiceAndPayment = () => {
 		if (!successfulCheckout.current) {
-			axios(`/api/store/checkout/cancel?invoice=${_invoiceId.current}`).catch(() => {
+			axios(`/api/store/checkout/cancel?invoice=${checkoutContext?.invoice}`).catch(() => {
 				console.error("Failed to cancel payment. Continuing session uninterrupted.");
 			});
 		}
 	};
 
 	const setupIntegratedWallet = async () => {
-		if (!stripe || totalCost === "0.00" || totalCost === "NaN") return;
+		if (!stripe || total.toFixed(2) === "0.00") return;
 		const paymentRequest = stripe!.paymentRequest({
 			country: "US",
 			currency: "usd",
 			total: {
 				label: `Dank Memer store purchase`,
-				amount: Math.floor(parseFloat(totalCost) * 100),
+				amount: Math.floor(total * 100),
 			},
 			displayItems: cart.map((item) => ({
 				label: `${item.quantity}x ${item.name}`,
@@ -210,7 +173,6 @@ export default function CheckoutForm({
 		});
 
 		const canMakePayment: CanMakePaymentResult | null = await paymentRequest.canMakePayment();
-		console.log(canMakePayment);
 
 		if (!canMakePayment) return;
 		setAcceptsIntegratedWallet(true);
@@ -223,7 +185,7 @@ export default function CheckoutForm({
 		if (!stripe || !stripeElements || !canCheckout) return;
 		setProcessingPayment(true);
 
-		const { data: res } = await axios(`/api/customers/${isGift ? giftFor : userId}`);
+		const { data: res } = await axios(`/api/customers/${isGift ? giftFor : user?.id}`);
 
 		if (res.isSubscribed && cart[0].type === "subscription") {
 			setProcessingPayment(false);
@@ -250,9 +212,9 @@ export default function CheckoutForm({
 			);
 		}
 
-		const result = await stripe.confirmCardPayment(clientSecret, {
+		const result = await stripe.confirmCardPayment(checkoutContext?.clientSecret!, {
 			setup_future_usage: saveCardAsDefault ? "off_session" : null,
-			receipt_email: receiptEmail,
+			receipt_email: checkoutContext?.receiptEmail,
 			payment_method:
 				selectedPaymentMethod.length > 1
 					? selectedPaymentMethod
@@ -277,10 +239,10 @@ export default function CheckoutForm({
 		successfulCheckout.current = true;
 		axios({
 			method: "PATCH",
-			url: `/api/store/checkout/finalize/stripe?invoice=${invoiceId}`,
+			url: `/api/store/checkout/finalize/stripe?invoice=${checkoutContext?.invoice}`,
 			data: {
 				customerName: nameOnCard,
-				receiptEmail,
+				receiptEmail: checkoutContext?.receiptEmail,
 				isGift,
 				giftFor,
 			},
@@ -289,7 +251,7 @@ export default function CheckoutForm({
 				setProcessingPayment(false);
 			})
 			.finally(() => {
-				router.push(`/store/checkout/success?gateway=stripe&id=${invoiceId}`);
+				router.push(`/store/checkout/success?gateway=stripe&id=${checkoutContext?.invoice}`);
 			});
 	};
 
@@ -453,7 +415,7 @@ export default function CheckoutForm({
 					</>
 				)}
 				<div className="mt-9 flex flex-col items-start justify-items-start lg:flex-row">
-					{(appliedDiscount || thresholdDiscount) && (
+					{(discount.code.length >= 1 || meetsThreshold) && (
 						<div className="mr-9 h-[224px] w-full lg:w-96">
 							<h3 className="font-montserrat text-base font-bold text-neutral-700 dark:text-white">
 								Applied discounts
@@ -461,21 +423,21 @@ export default function CheckoutForm({
 							<div className="flex h-full flex-col justify-between">
 								<div className="text-black dark:text-white">
 									<div className="mb-2">
-										{appliedDiscountCode.length > 1 && (
+										{discount.code.length > 1 && (
 											<div className="flex justify-between">
 												<h3 className="flex items-center justify-start text-base font-semibold text-neutral-300">
 													Code:{" "}
 													<code className="ml-2 text-lg text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
-														{appliedDiscountCode}
+														{discount.code}
 													</code>
 												</h3>
 											</div>
 										)}
 										<div className="max-h-[8rem]">
 											<ul className="pl-3">
-												{discountedItems.length >= 1 &&
+												{discount.discountedItems.length >= 1 &&
 													cart.length >= 1 &&
-													discountedItems.map((item) => (
+													discount.discountedItems.map((item) => (
 														<li className="flex list-decimal justify-between text-sm">
 															<p className="dark:text-neutral-400">
 																• {cart.filter((_item) => _item.id === item.id)[0].name}
@@ -486,7 +448,7 @@ export default function CheckoutForm({
 															</p>
 														</li>
 													))}
-												{thresholdDiscount && (
+												{meetsThreshold && (
 													<li className="flex list-decimal justify-between text-sm">
 														<p className="flex items-center justify-center space-x-1 dark:text-neutral-400">
 															<span>• Threshold discount</span>
@@ -496,10 +458,7 @@ export default function CheckoutForm({
 														</p>
 														<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
 															-$
-															{(
-																(parseFloat(subtotalCost) - appliedSavings) *
-																0.1
-															).toFixed(2)}
+															{((subtotal - discount.totalSavings) * 0.1).toFixed(2)}
 														</p>
 													</li>
 												)}
@@ -509,58 +468,19 @@ export default function CheckoutForm({
 								</div>
 								<div className="flex w-full justify-between rounded-lg bg-neutral-300 px-4 py-3 dark:bg-dank-500">
 									<Title size="small">Total:</Title>
-									<Title size="small">${totalCost}</Title>
+									<Title size="small">${total}</Title>
 								</div>
 							</div>
 						</div>
 					)}
 					<AccountInformation
 						stripe={stripe}
-						userId={userId}
-						cartData={cart}
-						clientSecret={_clientSecret.current}
-						invoiceId={invoiceId}
-						acceptsIntegratedWallet={acceptsIntegratedWallet}
-						integratedWallet={integratedWallet}
-						selectedPaymentOption={selectedPaymentOption}
-						userEmail={receiptEmail}
-						onEmailChange={setReceiptEmail}
-						processingPayment={processingPayment}
 						confirmPayment={confirmPayment}
 						completedPayment={completedPayment}
-						canCheckout={canCheckout}
-						itemsTotal={itemsTotal}
-						subtotalCost={subtotalCost}
-						totalCost={totalCost}
-						gift={gift}
-						discounts={{
-							discountsUsed: [
-								{
-									code: appliedDiscountCode ?? "",
-									items: appliedDiscountCode.length >= 1 ? discountedItems.map((di) => di.id) : [],
-								},
-								{
-									code: thresholdDiscount ? "THRESHOLD" : "",
-									items: thresholdDiscount ? cart.map((item) => item.id) : [],
-								},
-							],
-							discountedItemsTotalSavings: discountedItems.reduce(
-								(acc: number, item: DiscountItem) => acc + item.savings,
-								0
-							),
-							thresholdDiscount: thresholdDiscount
-								? (
-										(parseFloat(subtotalCost) -
-											discountedItems.reduce(
-												(acc: number, item: DiscountItem) => acc + item.savings,
-												0
-											)) *
-										0.1
-								  ).toFixed(2)
-								: "0.00",
-						}}
 						integratedWalletButtonType={
-							getSelectedPriceValue(cart[0], cart[0].selectedPrice).interval ? "subscribe" : "check-out"
+							!isValidating && getSelectedPriceValue(cart[0], cart[0].selectedPrice).interval
+								? "subscribe"
+								: "check-out"
 						}
 					/>
 				</div>
