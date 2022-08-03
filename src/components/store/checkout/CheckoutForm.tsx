@@ -86,7 +86,7 @@ export default function CheckoutForm({ user }: PageProps) {
 			.then(({ data }) => {
 				if (data.cards.default) {
 					setDefaultPaymentMethod(data.cards.default);
-					setSelectedPaymentMethod(data.cards.default);
+					setSelectedPaymentMethod(data.cards.default.id);
 				}
 				if (data.cards.other) setSavedPaymentMethods(data.cards.other);
 			})
@@ -451,7 +451,7 @@ export default function CheckoutForm({ user }: PageProps) {
 								</div>
 								<div className="flex w-full justify-between rounded-lg bg-neutral-300 px-4 py-3 dark:bg-dank-500">
 									<Title size="small">Total:</Title>
-									<Title size="small">${total}</Title>
+									<Title size="small">${total.toFixed(2)}</Title>
 								</div>
 							</div>
 						</div>
