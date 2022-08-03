@@ -253,7 +253,7 @@ export default function AccountInformation({
 					Account information
 				</h3>
 			)}
-			<div className="mt-3">
+			<div>
 				{paymentOption !== "PayPal" && (
 					<>
 						<p className="text-sm text-neutral-600 dark:text-neutral-500">

@@ -131,7 +131,7 @@ export default function CheckoutForm({ user }: PageProps) {
 	};
 
 	const setupIntegratedWallet = async () => {
-		if (!stripe || total.toFixed(2) === "0.00") return;
+		if (!stripe || isValidating) return;
 		const paymentRequest = stripe!.paymentRequest({
 			country: "US",
 			currency: "usd",
@@ -397,62 +397,60 @@ export default function CheckoutForm({ user }: PageProps) {
 						</div>
 					</>
 				)}
-				<div className="mt-9 flex flex-col items-start justify-items-start lg:flex-row">
+				<div className="mt-9 box-border flex flex-col justify-items-start lg:flex-1 lg:flex-row">
 					{(discount.code.length >= 1 || meetsThreshold) && (
-						<div className="mr-9 h-[224px] w-full lg:w-96">
-							<h3 className="font-montserrat text-base font-bold text-neutral-700 dark:text-white">
-								Applied discounts
-							</h3>
-							<div className="flex h-full flex-col justify-between">
-								<div className="text-black dark:text-white">
-									<div className="mb-2">
-										{discount.code.length > 1 && (
-											<div className="flex justify-between">
-												<h3 className="flex items-center justify-start text-base font-semibold text-neutral-300">
-													Code:{" "}
-													<code className="ml-2 text-lg text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
-														{discount.code}
-													</code>
-												</h3>
-											</div>
-										)}
-										<div className="max-h-[8rem]">
-											<ul className="pl-3">
-												{discount.discountedItems.length >= 1 &&
-													cart.length >= 1 &&
-													discount.discountedItems.map((item) => (
-														<li className="flex list-decimal justify-between text-sm">
-															<p className="dark:text-neutral-400">
-																• {cart.filter((_item) => _item.id === item.id)[0].name}
-															</p>
-															<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
-																-$
-																{item.savings.toFixed(2)}
-															</p>
-														</li>
-													))}
-												{meetsThreshold && (
+						<div className="mr-9 flex w-full flex-col justify-between lg:w-96">
+							<div className="text-black dark:text-white">
+								<h3 className="font-montserrat text-base font-bold text-neutral-700 dark:text-white">
+									Applied discounts
+								</h3>
+								<div className="mb-2">
+									{discount.code.length > 1 && (
+										<div className="flex justify-between">
+											<h3 className="flex items-center justify-start text-base font-semibold text-neutral-300">
+												Code:{" "}
+												<code className="ml-2 text-lg text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
+													{discount.code}
+												</code>
+											</h3>
+										</div>
+									)}
+									<div className="max-h-[8rem]">
+										<ul className="pl-3">
+											{discount.discountedItems.length >= 1 &&
+												cart.length >= 1 &&
+												discount.discountedItems.map((item) => (
 													<li className="flex list-decimal justify-between text-sm">
-														<p className="flex items-center justify-center space-x-1 dark:text-neutral-400">
-															<span>• Threshold discount</span>
-															<Tooltip content="10% Discount applied because base cart value exceeds $20">
-																<Iconify icon="ant-design:question-circle-filled" />
-															</Tooltip>
+														<p className="dark:text-neutral-400">
+															• {cart.filter((_item) => _item.id === item.id)[0].name}
 														</p>
 														<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
 															-$
-															{((subtotal - discount.totalSavings) * 0.1).toFixed(2)}
+															{item.savings.toFixed(2)}
 														</p>
 													</li>
-												)}
-											</ul>
-										</div>
+												))}
+											{meetsThreshold && (
+												<li className="flex list-decimal justify-between text-sm">
+													<p className="flex items-center justify-center space-x-1 dark:text-neutral-400">
+														<span>• Threshold discount</span>
+														<Tooltip content="10% Discount applied because base cart value exceeds $20">
+															<Iconify icon="ant-design:question-circle-filled" />
+														</Tooltip>
+													</p>
+													<p className="text-[#0FA958] drop-shadow-[0px_0px_4px_#0FA95898]">
+														-$
+														{((subtotal - discount.totalSavings) * 0.1).toFixed(2)}
+													</p>
+												</li>
+											)}
+										</ul>
 									</div>
 								</div>
-								<div className="flex w-full justify-between rounded-lg bg-neutral-300 px-4 py-3 dark:bg-dank-500">
-									<Title size="small">Total:</Title>
-									<Title size="small">${total.toFixed(2)}</Title>
-								</div>
+							</div>
+							<div className="flex w-full justify-between rounded-lg bg-neutral-300 px-4 py-3 dark:bg-dank-500">
+								<Title size="small">Total:</Title>
+								<Title size="small">${total.toFixed(2)}</Title>
 							</div>
 						</div>
 					)}
