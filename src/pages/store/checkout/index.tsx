@@ -50,7 +50,7 @@ export default function Checkout({ user, setup }: Props) {
 						</div>
 						<StoreBreadcrumb currentPage="checkout" />
 						<div className="flex flex-1 flex-col justify-between lg:flex-row">
-							<CheckoutForm />
+							<CheckoutForm user={user} />
 							<div className="relative hidden w-full lg:ml-5 lg:block">
 								<div className="relative h-full w-full rounded-lg bg-light-500 px-8 py-7 dark:bg-dark-200">
 									<Title size="small">Shopping cart</Title>

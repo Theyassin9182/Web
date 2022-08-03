@@ -63,22 +63,17 @@ export default function AccountInformation({
 
 	// Remade to fit new store!
 	const createPayment = () => {
-		// const totalWithTax = (
-		// 	parseFloat(itemsTotal) +
-		// 	parseFloat(itemsTotal) * 0.0675 -
-		// 	(parseFloat(discounts.thresholdDiscount) + discounts.discountedItemsTotalSavings)
-		// ).toFixed(2);
 		return {
 			intent: "CAPTURE", // Capture a payment, no pre-authorization,
 			purchase_units: [
 				{
 					amount: {
-						value: total,
+						value: total.toFixed(2),
 						currency_code: "USD",
 						breakdown: {
 							item_total: {
 								currency_code: "USD",
-								value: subtotal,
+								value: (subtotal + salesTax).toFixed(2),
 							},
 							discount: {
 								currency_code: "USD",
@@ -111,7 +106,7 @@ export default function AccountInformation({
 							name: "Sales tax",
 							unit_amount: {
 								currency_code: "USD",
-								value: (total * (STORE_TAX_PERCENT / 100)).toFixed(2),
+								value: salesTax.toFixed(2),
 							},
 							quantity: "1",
 							category: "DIGITAL_GOODS",

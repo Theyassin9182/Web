@@ -1,7 +1,6 @@
 import { CardCvcElement, CardExpiryElement, CardNumberElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import {
 	CanMakePaymentResult,
-	PaymentRequest,
 	StripeCardCvcElementChangeEvent,
 	StripeCardExpiryElementChangeEvent,
 	StripeCardNumberElementChangeEvent,
@@ -14,8 +13,6 @@ import Input from "../Input";
 import PaymentOption from "./PaymentOption";
 import router from "next/router";
 import Checkbox from "src/components/ui/Checkbox";
-import ApplyPaySvg from "public/img/store/apple-pay.svg";
-import GooglePaySvg from "public/img/store/google-pay.svg";
 import PaymentMethods from "./PaymentMethods";
 import AccountInformation from "./AccountInformation";
 import Tooltip from "src/components/ui/Tooltip";
@@ -27,7 +24,6 @@ import Image from "next/image";
 import { getSelectedPriceValue } from "src/util/store/index";
 import { useCart } from "src/util/hooks/useCart";
 import { useDiscount } from "src/util/hooks/useDiscount";
-import { StoreContext } from "src/contexts/StoreProvider";
 import { STORE_MINIMUM_DISCOUNT_VALUE, STORE_TAX_PERCENT } from "src/constants";
 import { PageProps } from "src/types";
 import { CheckoutContext } from "src/contexts/CheckoutProvider";
@@ -52,20 +48,12 @@ const StripeInputBaseStyles =
 
 export default function CheckoutForm({ user }: PageProps) {
 	const { cart, isValidating } = useCart();
-	const { discount, isValidating: discountIsValidating } = useDiscount();
-	const storeContext = useContext(StoreContext);
+	const { discount } = useDiscount();
 	const checkoutContext = useContext(CheckoutContext);
 
 	const successfulCheckout = useRef(false);
 
-	const [processingPayment, setProcessingPayment] = useState(false);
-	const [selectedPaymentOption, setSelectedPaymentOption] = useState<
-		"Card" | "PayPal" | "ApplePay" | "GooglePay" | "MicrosoftPay"
-	>("Card");
-	const [acceptsIntegratedWallet, setAcceptsIntegratedWallet] = useState(false);
 	const [integratedWalletType, setIntegratedWalletType] = useState<"apple" | "google" | "microsoft" | null>(null);
-	const [integratedWallet, setIntegratedWallet] = useState<PaymentRequest | null>(null);
-
 	const [defaultPaymentMethod, setDefaultPaymentMethod] = useState<CardData>();
 	const [savedPaymentMethods, setSavedPaymentMethods] = useState<CardData[]>();
 	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(""); // Payment method ID
@@ -80,8 +68,6 @@ export default function CheckoutForm({ user }: PageProps) {
 	const [cardCvcInput, setCardCvcInput] = useState<StripeCardCvcElementChangeEvent>();
 
 	const [saveCardAsDefault, setSaveCardAsDefault] = useState(false);
-	const [receiptEmail, setReceiptEmail] = useState(user?.email);
-	const [canCheckout, setCanCheckout] = useState(false);
 
 	const subtotal =
 		!isValidating && cart.length >= 1
@@ -120,18 +106,6 @@ export default function CheckoutForm({ user }: PageProps) {
 		setupIntegratedWallet();
 	}, [stripe]);
 
-	// useEffect(() => {
-	// 	const numSubCost = parseFloat(subtotalCost);
-	// 	const totalAfterSavings = numSubCost - appliedSavings;
-	// 	setThresholdDiscount(totalAfterSavings >= 20 && cart[0].type !== "subscription");
-	// 	setTotalCost(
-	// 		(
-	// 			totalAfterSavings -
-	// 			(totalAfterSavings >= 20 && cart[0].type !== "subscription" ? totalAfterSavings * 0.1 : 0)
-	// 		).toFixed(2)
-	// 	);
-	// }, [subtotalCost, discount.totalSavings]);
-
 	useEffect(() => {
 		if (
 			(nameOnCard.length >= 1 &&
@@ -140,8 +114,8 @@ export default function CheckoutForm({ user }: PageProps) {
 				cardCvcInput?.complete) ||
 			selectedPaymentMethod !== ""
 		)
-			setCanCheckout(true);
-		else setCanCheckout(false);
+			checkoutContext?.update!({ ...checkoutContext, canCheckout: true });
+		else checkoutContext?.update!({ ...checkoutContext, canCheckout: false });
 	}, [nameOnCard, cardNumberInput, cardExpiryInput, cardCvcInput, selectedPaymentMethod]);
 
 	useEffect(() => {
@@ -175,20 +149,20 @@ export default function CheckoutForm({ user }: PageProps) {
 		const canMakePayment: CanMakePaymentResult | null = await paymentRequest.canMakePayment();
 
 		if (!canMakePayment) return;
-		setAcceptsIntegratedWallet(true);
+		checkoutContext?.update!({ ...checkoutContext, acceptsIntegratedWallets: true });
 		if (canMakePayment.applePay) setIntegratedWalletType("apple");
 		else if (canMakePayment.googlePay) setIntegratedWalletType("google");
-		setIntegratedWallet(paymentRequest);
+		checkoutContext?.update!({ ...checkoutContext, integratedWallet: paymentRequest });
 	};
 
 	const confirmPayment = async (isGift: Boolean, giftFor: string, receiptEmail: string) => {
-		if (!stripe || !stripeElements || !canCheckout) return;
-		setProcessingPayment(true);
+		if (!stripe || !stripeElements || !checkoutContext?.canCheckout) return;
+		checkoutContext?.update!({ ...checkoutContext, processingPayment: true });
 
 		const { data: res } = await axios(`/api/customers/${isGift ? giftFor : user?.id}`);
 
 		if (res.isSubscribed && cart[0].type === "subscription") {
-			setProcessingPayment(false);
+			checkoutContext?.update!({ ...checkoutContext, processingPayment: false });
 			return toast.info(
 				<p>
 					{isGift ? <>That user</> : <>You</>} already {isGift ? <>has</> : <>have</>} an active subscription.{" "}
@@ -224,7 +198,7 @@ export default function CheckoutForm({ user }: PageProps) {
 		});
 
 		if (result.error) {
-			setProcessingPayment(false);
+			checkoutContext?.update!({ ...checkoutContext, processingPayment: false });
 			toast.error(result.error.message, {
 				position: "top-center",
 				theme: "colored",
@@ -248,7 +222,7 @@ export default function CheckoutForm({ user }: PageProps) {
 			},
 		})
 			.then(() => {
-				setProcessingPayment(false);
+				checkoutContext?.update!({ ...checkoutContext, processingPayment: false });
 			})
 			.finally(() => {
 				router.push(`/store/checkout/success?gateway=stripe&id=${checkoutContext?.invoice}`);
@@ -265,39 +239,48 @@ export default function CheckoutForm({ user }: PageProps) {
 							icons={["visa", "mastercard", "amex", "discover"].map((card) => (
 								<Image src={`/img/store/cards/${card}.svg`} key={card} width={26} height={20} />
 							))}
-							selected={selectedPaymentOption === "Card"}
-							select={() => setSelectedPaymentOption("Card")}
+							selected={checkoutContext?.selectedPaymentOption === "Card"}
+							select={() =>
+								checkoutContext?.update!({ ...checkoutContext, selectedPaymentOption: "Card" })
+							}
 						/>
 						<PaymentOption
 							icons={[<img key="paypal" src="/img/store/paypal.png" width={70} />]}
-							selected={selectedPaymentOption === "PayPal"}
-							select={() => setSelectedPaymentOption("PayPal")}
+							selected={checkoutContext?.selectedPaymentOption === "PayPal"}
+							select={() =>
+								checkoutContext?.update!({ ...checkoutContext, selectedPaymentOption: "PayPal" })
+							}
 						/>
 						{integratedWalletType === "apple" && (
 							<PaymentOption
 								icons={[<Image src="/img/store/apple-pay.svg" width={26} height={20} />]}
-								selected={selectedPaymentOption === "ApplePay"}
-								select={() => setSelectedPaymentOption("ApplePay")}
+								selected={checkoutContext?.selectedPaymentOption === "ApplePay"}
+								select={() =>
+									checkoutContext?.update!({ ...checkoutContext, selectedPaymentOption: "ApplePay" })
+								}
 							/>
 						)}
 						{integratedWalletType === "google" && (
 							<PaymentOption
 								icons={[<Image src="/img/store/google-pay.svg" width={26} height={20} />]}
-								selected={selectedPaymentOption === "GooglePay"}
-								select={() => setSelectedPaymentOption("GooglePay")}
+								selected={checkoutContext?.selectedPaymentOption === "GooglePay"}
+								select={() =>
+									checkoutContext?.update!({ ...checkoutContext, selectedPaymentOption: "GooglePay" })
+								}
 							/>
 						)}
 					</div>
-					{selectedPaymentOption === "Card" && (defaultPaymentMethod || savedPaymentMethods) && (
-						<PaymentMethods
-							savedPaymentMethods={savedPaymentMethods}
-							defaultPaymentMethod={defaultPaymentMethod}
-							select={setSelectedPaymentMethod}
-							selected={selectedPaymentMethod}
-						/>
-					)}
+					{checkoutContext?.selectedPaymentOption === "Card" &&
+						(defaultPaymentMethod || savedPaymentMethods) && (
+							<PaymentMethods
+								savedPaymentMethods={savedPaymentMethods}
+								defaultPaymentMethod={defaultPaymentMethod}
+								select={setSelectedPaymentMethod}
+								selected={selectedPaymentMethod}
+							/>
+						)}
 				</div>
-				{selectedPaymentOption === "Card" && (
+				{checkoutContext?.selectedPaymentOption === "Card" && (
 					<>
 						<h3 className="mt-7 font-montserrat text-base font-bold text-neutral-700 dark:text-white">
 							{!defaultPaymentMethod || !savedPaymentMethods
@@ -311,7 +294,7 @@ export default function CheckoutForm({ user }: PageProps) {
 									type="text"
 									label="Name on card"
 									defaultValue={nameOnCard}
-									disabled={processingPayment}
+									disabled={checkoutContext?.processingPayment}
 									onChange={(e: any) => setNameOnCard(e.target.value)}
 									placeholder="John doe"
 								/>
@@ -321,7 +304,7 @@ export default function CheckoutForm({ user }: PageProps) {
 										<CardNumberElement
 											onChange={(data) => setCardNumberInput(data)}
 											options={{
-												disabled: processingPayment,
+												disabled: checkoutContext?.processingPayment,
 												placeholder: "4024 0071 1411 4951",
 												style: {
 													base: {
@@ -349,7 +332,7 @@ export default function CheckoutForm({ user }: PageProps) {
 												<CardExpiryElement
 													onChange={(data) => setCardExpiryInput(data)}
 													options={{
-														disabled: processingPayment,
+														disabled: checkoutContext?.processingPayment,
 														placeholder: "04 / 25",
 														style: {
 															base: {
@@ -377,7 +360,7 @@ export default function CheckoutForm({ user }: PageProps) {
 												<CardCvcElement
 													onChange={(data) => setCardCvcInput(data)}
 													options={{
-														disabled: processingPayment,
+														disabled: checkoutContext?.processingPayment,
 														placeholder: "964",
 														style: {
 															base: {
@@ -474,6 +457,7 @@ export default function CheckoutForm({ user }: PageProps) {
 						</div>
 					)}
 					<AccountInformation
+						user={user}
 						stripe={stripe}
 						confirmPayment={confirmPayment}
 						completedPayment={completedPayment}
