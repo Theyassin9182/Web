@@ -1,6 +1,7 @@
 import { ObjectID } from "bson";
 import { ObjectId } from "mongodb";
 import { NextApiResponse } from "next";
+import { Metadata } from "src/pages/store";
 import { dbConnect } from "src/util/mongodb";
 import PayPal from "src/util/paypal";
 import { redisConnect } from "src/util/redis";
@@ -129,7 +130,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 					name: product.name,
 					price: lineItem.amount / 100,
 					quantity: lineItem.quantity!,
-					type: lineItem.price?.type!,
+					type: (lineItem.metadata as Metadata).type ?? lineItem.price?.type!,
 				});
 			}
 		}

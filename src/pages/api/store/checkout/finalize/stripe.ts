@@ -1,6 +1,7 @@
 import { ObjectID } from "bson";
 import { ObjectId } from "mongodb";
 import { NextApiResponse } from "next";
+import { Metadata } from "src/pages/store";
 import { UserData } from "src/types";
 import { dbConnect } from "src/util/mongodb";
 import { redisConnect } from "src/util/redis";
@@ -102,7 +103,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 					name: "SALESTAX",
 					price: lineItem.amount / 100,
 					quantity: 1,
-					type: lineItem.price?.type!,
+					type: (lineItem.metadata as Metadata).type ?? lineItem.price?.type!,
 				});
 			} else {
 				const product = await stripe.products.retrieve(lineItem.price!.product as string);

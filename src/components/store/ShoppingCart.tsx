@@ -14,7 +14,7 @@ interface Props {
 
 export default function ShoppingCart({ hovered }: Props) {
 	const router = useRouter();
-	const { cart, data, error, mutate, controller, isLoading, isValidating } = useCart();
+	const { cart, mutate, isLoading, isValidating } = useCart();
 	const itemCount = cart.reduce((prev, curr) => prev + curr.quantity, 0);
 	const total =
 		!isValidating && cart.length >= 1
@@ -28,7 +28,7 @@ export default function ShoppingCart({ hovered }: Props) {
 					.toFixed(2)
 			: "0.00";
 
-	const [showCart, setShowCart] = useState(false);
+	const [showCart, setShowCart] = useState(true);
 	// Thanks badosz
 	let timeoutEnter: NodeJS.Timeout;
 
@@ -67,56 +67,57 @@ export default function ShoppingCart({ hovered }: Props) {
 					</p>
 				</div>
 			</Button>
-			{showCart &&
-				(cart.length >= 1 ? (
-					<div className="absolute right-0 z-10 w-screen max-w-md pt-2 motion-safe:animate-slide-in">
-						<div className="w-full rounded-md bg-neutral-200 py-3 px-4 dark:bg-dank-600">
-							<Title size="small">Your cart</Title>
-							<div className="flex flex-col">
-								<div>
-									{!isValidating &&
-										cart.map((item, i) => (
-											<CartItem
-												key={item.id}
-												size="small"
-												index={i}
-												{...item}
-												changeInterval={mutate.changeInterval}
-												setQuantity={mutate.setQty}
-												increaseQuantity={mutate.incrQty}
-												decreaseQuantity={mutate.decrQty}
-												deleteItem={mutate.delItem}
-												disabled={false}
-											/>
-										))}
-								</div>
-								<div className="mt-5 flex justify-end">
-									<div className="flex w-2/3 flex-col">
-										<div className="flex w-full justify-between rounded-lg bg-neutral-300 px-4 py-3 dark:bg-dank-500">
-											<Title size="small">Subtotal:</Title>
-											<Title size="small">${total}</Title>
+			{showCart && (
+				<div className="absolute z-10 hidden w-screen max-w-md pt-2 motion-safe:animate-slide-in sm:right-0 sm:block">
+					<div className="w-full rounded-md bg-neutral-200 py-3 px-4 dark:bg-dank-600">
+						{cart.length >= 1 ? (
+							<>
+								<Title size="small">Your cart</Title>
+								<div className="flex flex-col">
+									<div>
+										{!isValidating &&
+											cart.map((item, i) => (
+												<CartItem
+													key={item.id}
+													size="small"
+													index={i}
+													{...item}
+													changeInterval={mutate.changeInterval}
+													setQuantity={mutate.setQty}
+													increaseQuantity={mutate.incrQty}
+													decreaseQuantity={mutate.decrQty}
+													deleteItem={mutate.delItem}
+													disabled={false}
+												/>
+											))}
+									</div>
+									<div className="mt-5 flex justify-end">
+										<div className="flex w-2/3 flex-col">
+											<div className="flex w-full justify-between rounded-lg bg-neutral-300 px-4 py-3 dark:bg-dank-500">
+												<Title size="small">Subtotal:</Title>
+												<Title size="small">${total}</Title>
+											</div>
+											<Button className="mt-2 w-full" onClick={() => router.push("/store/cart")}>
+												Review cart
+											</Button>
 										</div>
-										<Button className="mt-2 w-full" onClick={() => router.push("/store/cart")}>
-											Review cart
-										</Button>
 									</div>
 								</div>
-							</div>
-						</div>
+							</>
+						) : (
+							<>
+								<h4 className="text-lg font-bold">Your cart</h4>
+								<div className="my-6 flex flex-col">
+									<p className="mx-auto w-3/4 text-center opacity-50">
+										You don't have anything in your cart, add something from the store for it to
+										show up here!
+									</p>
+								</div>
+							</>
+						)}
 					</div>
-				) : (
-					<div className="absolute right-0 z-50 pt-2">
-						<div className="w-96 rounded-md bg-neutral-200 py-2 px-3 dark:bg-dank-600">
-							<h4 className="text-lg font-bold">Your cart</h4>
-							<div className="my-6 flex flex-col">
-								<p className="mx-auto w-3/4 text-center opacity-50">
-									You don't have anything in your cart, add something from the store for it to show up
-									here!
-								</p>
-							</div>
-						</div>
-					</div>
-				))}
+				</div>
+			)}
 		</div>
 	);
 }

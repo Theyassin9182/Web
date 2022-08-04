@@ -36,6 +36,7 @@ import { useCart } from "src/util/hooks/useCart";
 import { useDiscount } from "src/util/hooks/useDiscount";
 import CartDetails from "src/components/store/cart/Details";
 import StoreProvider, { StoreContext } from "src/contexts/StoreProvider";
+import CartController from "src/util/cart/controller";
 
 interface Props extends PageProps {
 	cartData: ICartItem[];
@@ -268,14 +269,15 @@ export const getServerSideProps: GetServerSideProps = withSession(
 			};
 		}
 
-		const cart = await ctx.req.session.get("cart");
-		if (!cart || cart.length < 1)
+		const controller = new CartController(ctx.req.session.get("cart"));
+		if (controller.iterable().length < 1) {
 			return {
 				redirect: {
 					destination: `/store`,
 					permanent: false,
 				},
 			};
+		}
 
 		const db = await dbConnect();
 		const dbUser = (await db.collection("users").findOne({ _id: user.id })) as UserData;
@@ -292,7 +294,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
 		const itemCounts: { [key: string]: number } = {};
 		for (let purchase of samplePurchaseSet) {
 			for (let item of purchase.items) {
-				if (item.type === "recurring") break;
+				if (item.type !== "one_time" && item.type !== "single") break;
 				itemCounts[item.id!] = (itemCounts[item.id!] ?? 0) + item.quantity;
 			}
 		}
@@ -328,7 +330,6 @@ export const getServerSideProps: GetServerSideProps = withSession(
 
 		return {
 			props: {
-				cartData: cart,
 				upsells,
 				user,
 				country,

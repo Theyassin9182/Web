@@ -71,13 +71,13 @@ export default function Success({ paymentGateway, invoice, user }: Props) {
 
 	useEffect(() => {
 		router.replace("/store/checkout/success", undefined, { shallow: true });
-		offsetVerticalSimplebar(-20);
+		// offsetVerticalSimplebar(-20);
 	}, []);
 
 	return (
 		<Container title="Successful purchase" user={user}>
 			<div className="mb-24 grid place-items-center">
-				<div className="mt-12 mb-3 flex w-2/5 flex-col">
+				<div className="mt-12 mb-3 flex w-full max-w-lg flex-col">
 					<Title size="big">Purchase Summary</Title>
 					<p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
 						Thank you for your purchase! You should receive your purchased goods within 5 minutes of
@@ -102,16 +102,19 @@ export default function Success({ paymentGateway, invoice, user }: Props) {
 						</span>
 					</p>
 				</div>
-				<div className="relative box-border grid h-[587px] w-2/5 place-items-center overflow-hidden">
-					<div className="relative h-full w-full max-w-4xl">
+				<div
+					className="relative grid w-full max-w-lg place-items-center overflow-hidden"
+					style={{ height: "587px" }}
+				>
+					<div className="relative h-full w-full max-w-lg">
 						<div className="relative h-full w-full rounded-lg bg-light-500 px-8 py-7 dark:bg-dark-200">
 							<div className="flex h-full flex-col items-end justify-between">
 								<div className="w-full">
-									<div className="flex justify-between">
+									<div className="flex flex-col gap-y-3 sm:flex-row sm:justify-between sm:gap-y-0">
 										<div
 											className={clsx(
 												"flex flex-col",
-												JSON.parse(invoice.metadata.isGift) ? "w-1/2" : "w-full"
+												JSON.parse(invoice.metadata.isGift) ? "w-full sm:w-1/2" : "w-full"
 											)}
 										>
 											<h3 className="font-montserrat text-base font-bold text-black dark:text-white">
@@ -126,7 +129,7 @@ export default function Success({ paymentGateway, invoice, user }: Props) {
 											</p>
 										</div>
 										{JSON.parse(invoice.metadata.isGift) && (
-											<div className="flex w-2/5 flex-col">
+											<div className="flex w-full flex-col sm:w-2/5">
 												<h3 className="font-montserrat text-base font-bold text-black dark:text-white">
 													Purchased for
 												</h3>
@@ -143,7 +146,7 @@ export default function Success({ paymentGateway, invoice, user }: Props) {
 											Items purchased
 										</h3>
 										<div>
-											<SimpleBar className="flex max-h-72 flex-col" autoHide={false}>
+											<SimpleBar className="flex max-h-72 w-full flex-col" autoHide={false}>
 												{invoice.items.map((item) => (
 													<CartItemImmutable
 														key={item.id}

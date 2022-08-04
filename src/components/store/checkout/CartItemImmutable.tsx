@@ -24,8 +24,10 @@ export default function CartItemImmutable({
 					}}
 				></div>
 				<div className="ml-5 flex flex-col justify-center">
-					<h4 className="font-bold leading-none text-gray-800 dark:text-white">{name}</h4>
-					<p className="mt-0.5 text-sm leading-none text-light-600">
+					<h4 className="font-bold leading-none text-gray-800 dark:text-white">
+						{name} <span className="inline font-inter text-sm font-normal sm:hidden">x{quantity}</span>
+					</h4>
+					<p className="mt-0.5 hidden text-sm leading-none text-light-600 sm:block">
 						{gifted && "(Gifted) "}
 						{type && toTitleCase(type === "giftable" ? "subscription" : type)}
 					</p>
@@ -48,7 +50,7 @@ export default function CartItemImmutable({
 						</p>
 					)
 				) : (
-					<p className="text-sm leading-none text-light-600">Quantity: {quantity}</p>
+					<p className="hidden text-sm leading-none text-light-600 sm:block">Quantity: {quantity}</p>
 				)}
 			</div>
 		</div>

@@ -30,6 +30,7 @@ import { default as ProductUpdated } from "./events/stripe/product/updated";
 
 import { RESTPostAPIWebhookWithTokenJSONBody } from "discord-api-types/v10";
 import { RequireExactlyOne } from "type-fest";
+import { Metadata } from "src/pages/store";
 
 export const config = {
 	api: {
@@ -42,7 +43,7 @@ export interface PaymentIntentItemResult {
 	name: string;
 	price: number;
 	quantity: number;
-	type: Stripe.Price.Type;
+	type: Metadata["type"] | Stripe.Price.Type;
 	interval?: Stripe.Price.Recurring.Interval;
 	intervalCount?: number;
 	image?: string;

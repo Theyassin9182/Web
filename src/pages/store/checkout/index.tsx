@@ -15,6 +15,7 @@ import { StoreContext } from "src/contexts/StoreProvider";
 import CheckoutProvider from "src/contexts/CheckoutProvider";
 import { checkoutSetup, CheckoutSetupImpl } from "src/util/store/checkout";
 import { STORE_TAX_PERCENT } from "src/constants";
+import CartController from "src/util/cart/controller";
 
 const rawStripeElementsOptions: StripeElementsOptions = {};
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -106,8 +107,8 @@ export const getServerSideProps: GetServerSideProps = withSession(
 			};
 		}
 
-		const cart = await ctx.req.session.get("cart");
-		if (!cart)
+		const controller = new CartController(ctx.req.session.get("cart"));
+		if (controller.iterable().length < 1)
 			return {
 				redirect: {
 					destination: `/store`,

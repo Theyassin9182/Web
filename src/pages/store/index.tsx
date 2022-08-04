@@ -113,22 +113,17 @@ export default function StoreHome({ user, banned, country, verification }: Props
 	);
 
 	const addProductById = async (id: string) => {
-		if (!processingCartChange) {
-			try {
-				setProcessingCartChange(true);
-				const { data: product }: { data: CartItem } = await axios(
-					`/api/store/product/find?id=${id}&action=format&to=cart-item`
-				);
-				if (requiresAgeVerification && product.category?.toLowerCase() === "lootbox") {
-					return setOpenDialog(true);
-				}
-				await mutate.addItem(product);
-			} catch (e) {
-				console.error(e);
-				toast.error("We were unable to update your cart information. Please try again later.");
-			} finally {
-				setProcessingCartChange(false);
+		try {
+			const { data: product }: { data: CartItem } = await axios(
+				`/api/store/product/find?id=${id}&action=format&to=cart-item`
+			);
+			if (requiresAgeVerification && product.category?.toLowerCase() === "lootbox") {
+				return setOpenDialog(true);
 			}
+			await mutate.addItem(product);
+		} catch (e) {
+			console.error(e);
+			toast.error("We were unable to update your cart information. Please try again later.");
 		}
 	};
 
@@ -258,7 +253,6 @@ export default function StoreHome({ user, banned, country, verification }: Props
 												<PopularProduct
 													key={product.id}
 													product={product}
-													canAdd={!processingCartChange}
 													add={() => addProductById(product.id)}
 													openModal={() => setModalProductId(product.id)}
 												/>
@@ -284,7 +278,6 @@ export default function StoreHome({ user, banned, country, verification }: Props
 											<Product
 												key={product.id}
 												product={product}
-												canAdd={!processingCartChange}
 												add={() => addProductById(product.id)}
 												openModal={() => setModalProductId(product.id)}
 											/>
@@ -312,7 +305,6 @@ export default function StoreHome({ user, banned, country, verification }: Props
 											<Product
 												key={product.id}
 												product={product}
-												canAdd={!processingCartChange}
 												add={() => addProductById(product.id)}
 												openModal={() => setModalProductId(product.id)}
 											/>
