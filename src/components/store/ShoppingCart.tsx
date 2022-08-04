@@ -28,7 +28,7 @@ export default function ShoppingCart({ hovered }: Props) {
 					.toFixed(2)
 			: "0.00";
 
-	const [showCart, setShowCart] = useState(true);
+	const [showCart, setShowCart] = useState(false);
 	// Thanks badosz
 	let timeoutEnter: NodeJS.Timeout;
 
