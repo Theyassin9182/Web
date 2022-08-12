@@ -190,6 +190,7 @@ export default function PurchaseHistory({ user }: PageProps) {
 					) : (
 						<p>No purchases made</p>
 					)}
+					<Pagination instance={instance} />
 				</section>
 			</main>
 		</Container>
