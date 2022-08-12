@@ -112,12 +112,28 @@ export default function PurchaseHistory({ user }: PageProps) {
 					return <>${(subtotal + subtotal * 0.0675).toFixed(2)}</>;
 				},
 				size: 240,
+				sortingFn: (a, b) =>
+					a.original!.items.reduce((curr: number, item) => curr + item.price, 0) >
+					b.original!.items.reduce((curr: number, item) => curr + item.price, 0)
+						? -1
+						: b.original!.items.reduce((curr: number, item) => curr - item.price, 0) <
+						  a.original!.items.reduce((curr: number, item) => curr - item.price, 0)
+						? 1
+						: 0,
 			}),
 			table.createDataColumn("items", {
 				id: "rtl_items",
 				header: "# of Goods",
 				cell: (items) => <>{items.getValue().reduce((prev, curr) => prev + curr.quantity, 0)}</>,
 				size: 80,
+				sortingFn: (a, b) =>
+					a.original!.items.reduce((prev, curr) => prev + curr.quantity, 0) >
+					b.original!.items.reduce((prev, curr) => prev + curr.quantity, 0)
+						? -1
+						: b.original!.items.reduce((prev, curr) => prev - curr.quantity, 0) <
+						  a.original!.items.reduce((prev, curr) => prev - curr.quantity, 0)
+						? 1
+						: 0,
 			}),
 			table.createDisplayColumn({
 				id: "ng_actions",
