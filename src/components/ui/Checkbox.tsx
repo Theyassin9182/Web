@@ -12,7 +12,13 @@ interface Props {
 
 export default function Checkbox({ state, style = "border", callback, children = <></>, className }: Props) {
 	return (
-		<div className={clsx("mt-2 flex flex-row items-center justify-start", className)} onClick={callback}>
+		<div
+			className={clsx("mt-2 flex flex-row items-center justify-start", className)}
+			onClick={(e) => {
+				callback();
+				e.stopPropagation();
+			}}
+		>
 			<div
 				className={clsx(
 					!state ? "border-[#3C3C3C]" : "border-dank-300",
