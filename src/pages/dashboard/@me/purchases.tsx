@@ -25,6 +25,8 @@ import {
 import Tooltip from "src/components/ui/Tooltip";
 import { Icon as Iconify } from "@iconify/react";
 import { formatRelative } from "date-fns";
+import { STORE_TAX_PERCENT } from "src/constants";
+import Pagination from "src/components/control/Table/Pagination";
 
 export default function PurchaseHistory({ user }: PageProps) {
 	const { current: table } = useRef(
@@ -94,13 +96,29 @@ export default function PurchaseHistory({ user }: PageProps) {
 				header: `Cost (incl. tax) before discounts`,
 				cell: (items) => {
 					const subtotal = items.getValue().reduce((curr: number, item) => curr + item.price, 0);
-					return <>${(subtotal + subtotal * 0.0675).toFixed(2)}</>;
+					return <>${(subtotal + subtotal * (STORE_TAX_PERCENT / 100)).toFixed(2)}</>;
 				},
+				sortingFn: (a, b) =>
+					a.original!.items.reduce((curr: number, item) => curr + item.price, 0) >
+					b.original!.items.reduce((curr: number, item) => curr + item.price, 0)
+						? -1
+						: b.original!.items.reduce((curr: number, item) => curr - item.price, 0) <
+						  a.original!.items.reduce((curr: number, item) => curr - item.price, 0)
+						? 1
+						: 0,
 			}),
 			table.createDataColumn("items", {
 				id: "rtl_items",
 				header: "# of Goods",
 				cell: (items) => <>{items.getValue().reduce((prev, curr) => prev + curr.quantity, 0)}</>,
+				sortingFn: (a, b) =>
+					a.original!.items.reduce((prev, curr) => prev + curr.quantity, 0) >
+					b.original!.items.reduce((prev, curr) => prev + curr.quantity, 0)
+						? -1
+						: b.original!.items.reduce((prev, curr) => prev - curr.quantity, 0) <
+						  a.original!.items.reduce((prev, curr) => prev - curr.quantity, 0)
+						? 1
+						: 0,
 			}),
 			table.createDisplayColumn({
 				id: "ng_actions",
