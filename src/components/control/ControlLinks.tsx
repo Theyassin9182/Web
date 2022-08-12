@@ -37,6 +37,7 @@ export default function ControlLinks({ user }: Props) {
 						text="Job listings"
 						href="/control/website/jobs"
 					/>
+					<Navlink icon="bx:bxs-file-json" text="Website data" href="/control/website/data" />
 				</LinkGroup>
 				<LinkGroup title="Users">
 					<Navlink icon="la:user-cog" size={24} text="User access control" href="/control/users/access" />
@@ -61,7 +62,6 @@ export default function ControlLinks({ user }: Props) {
 				</LinkGroup>
 				<LinkGroup title="Miscellaneous" nomb>
 					<Navlink icon="ph:users-three" text="All staff" href="/control/staff" />
-					<Navlink icon="bx:bxs-file-json" text="Website data" href="/control/data-upload" />
 				</LinkGroup>
 			</SimpleBar>
 			<div className="absolute bottom-5 left-0 ml-6 flex justify-center xl:hidden">
