@@ -50,7 +50,7 @@ export default function Dialog({ open, onClose, children, closeButton }: Props) 
 				"w-full sm:max-w-lg"
 			)}
 		>
-			<form className="p-4 pr-5">
+			<form className="p-4 pr-5" onSubmit={(e) => e.preventDefault()}>
 				{closeButton && (
 					<span
 						className="absolute -top-1 -right-1 cursor-pointer opacity-50 hover:opacity-75 phone:top-2 phone:right-2"
