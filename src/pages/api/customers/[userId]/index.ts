@@ -125,7 +125,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 								},
 								last4: defaultPaymentMethod.card?.last4,
 								expired:
-									defaultPaymentMethod.card?.exp_year! <= today.getFullYear() ||
+									defaultPaymentMethod.card?.exp_year! < today.getFullYear() ||
 									(defaultPaymentMethod.card?.exp_year! <= today.getFullYear() &&
 										defaultPaymentMethod.card?.exp_month! < today.getMonth() + 1),
 							},
@@ -145,7 +145,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 								},
 								last4: pm.card?.last4,
 								expired:
-									pm.card?.exp_year! <= today.getFullYear() ||
+									pm.card?.exp_year! < today.getFullYear() ||
 									(pm.card?.exp_year! <= today.getFullYear() &&
 										pm.card?.exp_month! < today.getMonth() + 1),
 							},
