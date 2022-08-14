@@ -95,7 +95,7 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		}
 
 		let defaultPaymentMethod: Stripe.PaymentMethod | null = null;
-		if (customer.invoice_settings.default_payment_method !== null) {
+		if (customer.invoice_settings.default_payment_method) {
 			defaultPaymentMethod = await stripe.paymentMethods.retrieve(
 				(customer.invoice_settings.default_payment_method as Stripe.PaymentMethod).id as string
 			);
