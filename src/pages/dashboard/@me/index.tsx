@@ -24,7 +24,7 @@ import { withSession } from "src/util/session";
 
 export type PossibleDialogViews = "adjust" | "cancel" | "new-card" | "delete-cards";
 
-export default function Account({ user }: PageProps) {
+export default function Account({ user }: Required<PageProps>) {
 	const [loading, setLoading] = useState(true);
 	const [profile, setProfile] = useState<Profile>();
 	const [customer, setCustomer] = useState<SensitiveCustomerData>();
@@ -85,11 +85,12 @@ export default function Account({ user }: PageProps) {
 				<LoadingPepe />
 			) : (
 				<main>
-					{subscribedTo && user && (
+					{(subscribedTo || user) && (
 						<Dialog open={dialogOpen} onClose={setDialogOpen} closeButton>
 							{(() => {
 								switch (dialogView) {
 									case "adjust":
+										if (!subscribedTo) return;
 										return (
 											<AdjustSubscription
 												userId={user.id}
@@ -106,6 +107,7 @@ export default function Account({ user }: PageProps) {
 											/>
 										);
 									case "cancel":
+										if (!subscribedTo) return;
 										return (
 											<CancelSubscription
 												userId={user.id}
