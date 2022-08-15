@@ -122,7 +122,6 @@ export default function StoreHome({ user, banned, country, verification }: Props
 			}
 			await mutate.addItem(product);
 		} catch (e) {
-			console.error(e);
 			toast.error("We were unable to update your cart information. Please try again later.");
 		}
 	};
