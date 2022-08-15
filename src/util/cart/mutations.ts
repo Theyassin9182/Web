@@ -51,7 +51,11 @@ export default class Mutations {
 			switch (action) {
 				case "add":
 					if (typeof item === "string") break;
-					expectedOutput = await this.controller.addItem(item.id, item);
+					try {
+						expectedOutput = await this.controller.addItem(item.id, item);
+					} catch {
+						reject();
+					}
 					break;
 				case "delete":
 					if (typeof item !== "string") break;
