@@ -66,6 +66,15 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 	const total = subtotal + salesTax - discount.totalSavings;
 	const meetsThreshold = total >= STORE_MINIMUM_DISCOUNT_VALUE && acceptDiscounts;
 
+	const proceed = () => {
+		axios({
+			url: "/api/store/cart/configure",
+			method: "POST",
+			data: context?.config,
+		});
+		router.push("/store/checkout");
+	};
+
 	return (
 		<div className="h-max w-full rounded-lg bg-light-500 px-8 py-7 dark:bg-dark-200 md:mr-10 lg:my-5 lg:mr-10">
 			<Title size="small">Details</Title>
@@ -267,7 +276,7 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 			<Button
 				size="medium"
 				className="mt-3 w-full"
-				onClick={() => router.push("/store/checkout")}
+				onClick={proceed}
 				disabled={context?.config.isGift && !validGiftRecipient}
 			>
 				Continue to Checkout

@@ -7,12 +7,10 @@ const handler = async (req: NextIronRequest, res: NextApiResponse) => {
 		return res.status(403).json({ message: "You are not authorized." });
 	}
 
-	const { isGift, giftFor } = req.body;
+	if (!req.body) return res.status(400).json({ message: "No store configuration was provided. Continue." });
+
 	try {
-		req.session.set("store-config", {
-			isGift,
-			giftFor,
-		});
+		req.session.set("store-config", req.body);
 		await req.session.save();
 	} catch (e: any) {
 		console.error(e.message.replace(/"/g, ""));

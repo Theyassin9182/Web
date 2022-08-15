@@ -37,7 +37,7 @@ export const checkoutSetup = async (
 			return reject({ error: "You are not logged in." });
 		}
 
-		const config = (await req.session.get("store-config")) as StoreConfiguration; // TODO: Fix this
+		const config = (await req.session.get("store-config")) as StoreConfiguration;
 		const controller = new CartController(req.session.get("cart"));
 		const cart = controller.iterable();
 		if (!cart) {
