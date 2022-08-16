@@ -14,8 +14,15 @@ import { useCart } from "src/util/hooks/useCart";
 import { StoreContext } from "src/contexts/StoreProvider";
 import CheckoutProvider from "src/contexts/CheckoutProvider";
 import { checkoutSetup, CheckoutSetupImpl } from "src/util/store/checkout";
-import { STORE_TAX_PERCENT } from "src/constants";
+import {
+	STORE_FLAT_DISCOUNT_PERCENTAGE,
+	STORE_MINIMUM_DISCOUNT_VALUE,
+	STORE_MINIMUM_PURCHASE_VALUE,
+	STORE_TAX_PERCENT,
+} from "src/constants";
 import CartController from "src/util/cart/controller";
+import { CartItem } from "..";
+import { getSelectedPriceValue } from "src/util/store";
 
 const rawStripeElementsOptions: StripeElementsOptions = {};
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -107,6 +114,7 @@ export const getServerSideProps: GetServerSideProps = withSession(
 			};
 		}
 
+		const discount = await ctx.req.session.get("discountCode");
 		const controller = new CartController(ctx.req.session.get("cart"));
 		if (controller.iterable().length < 1)
 			return {
@@ -115,6 +123,31 @@ export const getServerSideProps: GetServerSideProps = withSession(
 					permanent: false,
 				},
 			};
+
+		const subtotal = controller
+			.iterable()
+			.reduce(
+				(acc: number, item: CartItem) =>
+					acc + ((getSelectedPriceValue(item, item.selectedPrice)?.value ?? 100) / 100) * item.quantity,
+				0
+			);
+
+		const salesTax = subtotal * (STORE_TAX_PERCENT / 100);
+		const total = subtotal + salesTax - (discount?.totalSavings ?? 0);
+		const meetsThreshold =
+			total >= STORE_MINIMUM_DISCOUNT_VALUE && controller.iterable()[0].type !== "subscription";
+		const meetsMinimum =
+			total - (meetsThreshold ? total * (STORE_FLAT_DISCOUNT_PERCENTAGE / 100) : 0) >=
+			STORE_MINIMUM_PURCHASE_VALUE;
+
+		if (!meetsMinimum) {
+			return {
+				redirect: {
+					destination: `/store/cart`,
+					permanent: false,
+				},
+			};
+		}
 
 		const setup = await checkoutSetup(ctx.req);
 

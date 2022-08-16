@@ -4,7 +4,12 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Title } from "src/components/Title";
 import Button from "src/components/ui/Button";
 import Tooltip from "src/components/ui/Tooltip";
-import { STORE_FLAT_DISCOUNT_PERCENTAGE, STORE_MINIMUM_DISCOUNT_VALUE, STORE_TAX_PERCENT } from "src/constants";
+import {
+	STORE_FLAT_DISCOUNT_PERCENTAGE,
+	STORE_MINIMUM_DISCOUNT_VALUE,
+	STORE_MINIMUM_PURCHASE_VALUE,
+	STORE_TAX_PERCENT,
+} from "src/constants";
 import { CartItem } from "src/pages/store";
 import { useCart } from "src/util/hooks/useCart";
 import { useDiscount } from "src/util/hooks/useDiscount";
@@ -65,6 +70,8 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 	const salesTax = subtotal * (STORE_TAX_PERCENT / 100);
 	const total = subtotal + salesTax - discount.totalSavings;
 	const meetsThreshold = total >= STORE_MINIMUM_DISCOUNT_VALUE && acceptDiscounts;
+	const meetsMinimum =
+		total - (meetsThreshold ? total * (STORE_FLAT_DISCOUNT_PERCENTAGE / 100) : 0) >= STORE_MINIMUM_PURCHASE_VALUE;
 
 	const proceed = () => {
 		axios({
@@ -273,14 +280,25 @@ export default function CartDetails({ userId, acceptDiscounts }: Props) {
 				</div>
 			</div>
 
-			<Button
-				size="medium"
-				className="mt-3 w-full"
-				onClick={proceed}
-				disabled={context?.config.isGift && !validGiftRecipient}
-			>
-				Continue to Checkout
-			</Button>
+			{!meetsMinimum ? (
+				<>
+					<Button size="medium" className="mt-3 w-full" onClick={proceed} disabled={true}>
+						Continue to Checkout
+					</Button>
+					<p className="text-semibold text-center text-sm text-red-500">
+						Your cart value does not meet the minimum value of ${STORE_MINIMUM_PURCHASE_VALUE.toFixed(2)}
+					</p>
+				</>
+			) : (
+				<Button
+					size="medium"
+					className="mt-3 w-full"
+					onClick={proceed}
+					disabled={context?.config.isGift && !validGiftRecipient}
+				>
+					Continue to Checkout
+				</Button>
+			)}
 		</div>
 	);
 }
