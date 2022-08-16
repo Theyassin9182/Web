@@ -5,6 +5,8 @@ import Button from "../ui/Button";
 import type { RequireExactlyOne } from "type-fest";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useCart } from "src/util/hooks/useCart";
+import { CartItem } from "src/pages/store";
 
 interface Props {
 	pages?: BannerPage[];
@@ -67,6 +69,7 @@ export default function PagedBanner({
 	duration = 1000,
 }: RequireExactlyOne<Props, "pages" | "displayPage">) {
 	const router = useRouter();
+	const { mutate } = useCart();
 
 	const [primaryActionLoading, setPrimaryActionLoading] = useState(false);
 	const [paused, setPaused] = useState(false);
@@ -110,8 +113,14 @@ export default function PagedBanner({
 					exec: async () => {
 						try {
 							setPrimaryActionLoading(true);
-							await axios(`/api/store/cart/add?id=${input}`);
-							await router.push("/store/cart");
+							try {
+								const { data: product }: { data: CartItem } = await axios(
+									`/api/store/product/find?id=${input}&action=format&to=cart-item`
+								);
+								await mutate.addItem(product);
+							} catch (e) {
+								toast.error("We were unable to update your cart information. Please try again later.");
+							}
 						} catch (e) {
 							if (process.env.NODE_ENV !== "production" && process.env.IN_TESTING) {
 								console.error(e);
