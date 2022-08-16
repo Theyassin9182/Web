@@ -102,9 +102,7 @@ export default function StoreHome({ user, banned, country, verification }: Props
 	const [openModal, setOpenModal] = useState(false);
 	const [openDialog, setOpenDialog] = useState(false);
 
-	const [processingCartChange, setProcessingCartChange] = useState(false);
 	const [cartButtonHovered, setCartButtonHovered] = useState(false);
-
 	const [requiresAgeVerification, setRequiresAgeVerification] = useState(
 		!(
 			Object.keys(STORE_NO_MIN_AGE).concat(Object.keys(STORE_BLOCKED_COUNTRIES)).includes(country) &&
