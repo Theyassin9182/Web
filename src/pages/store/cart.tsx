@@ -126,7 +126,7 @@ export default function Cart({ upsells, country, user, verification }: Props) {
 			if (requiresAgeVerification && formatted.category?.toLowerCase() === "lootbox") {
 				return setOpenDialog(true);
 			}
-			await mutate.addItem(formatted, true);
+			await mutate.addItem(formatted);
 		} catch (e) {
 			toast.error("We were unable to update your cart information. Please try again later.");
 		}
